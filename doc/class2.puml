@@ -1,0 +1,275 @@
+@startuml name "Class Diagram 2"
+set namespaceSeparator ::
+
+package Presentation {
+    class MainWindow {
+        +show()
+        +close()
+        +setSessionStatus(status: QString)
+    }
+
+    class CanvasView {
+        +setScene(scene)
+        +zoomIn()
+        +zoomOut()
+        +setGridVisible(visible: bool)
+        +displaySyncMessage(msg: QString)
+    }
+
+    class Toolbar {
+        +setActiveTool(tool: ToolType)
+        +onToolSelected(tool: ToolType)
+        +highlightTool(tool: ToolType)
+    }
+
+    class StylePanel {
+        +setColor(color: QColor)
+        +setThickness(value: int)
+        +setLineStyle(style: Qt::PenStyle)
+    }
+
+    class UserListPanel {
+        +updateUserList(users: QList<UserDTO>)
+        +showAdminOptions(isAdmin: bool)
+    }
+
+    class SessionDialog {
+        +showCreateSession()
+        +showJoinSession()
+        +getSessionCode(): QString
+        +getUserName(): QString
+    }
+
+    class ImageInsertDialog {
+        +openFileDialog()
+        +getImagePath(): QString
+    }
+
+    MainWindow o-- "1" CanvasView
+    MainWindow o-- "1" Toolbar
+    MainWindow o-- "1" StylePanel
+    MainWindow o-- "1" UserListPanel
+    MainWindow o-- "1" SessionDialog
+    MainWindow o-- "0..1" ImageInsertDialog
+
+    CanvasView --> "1" WhiteboardController
+    Toolbar --> "1" WhiteboardController
+    StylePanel --> "1" WhiteboardController
+    UserListPanel --> "1" SessionController
+    SessionDialog --> "1" SessionController
+    ImageInsertDialog --> "1" WhiteboardController
+}
+
+package Metier {
+    class WhiteboardController {
+        +addText(position, text, style)
+        +addShape(shapeType, points, style)
+        +addImage(position, imageData)
+        +removeItem(itemId)
+        +moveItem(itemId, newPosition)
+        +startDrawing(tool)
+        +setActiveTool(tool: ToolType)
+        +updateStyle(style)
+        +undo()
+        +redo()
+        +selectItem(itemId)
+        +loadWhiteboard(WhiteboardModel)
+        +saveWhiteboard(): WhiteboardModel
+    }
+
+    class SessionController {
+        +createSession(userName)
+        +joinSession(sessionCode, userName)
+        +leaveSession()
+        +banUser(userId)
+        +updatePermissions(userId, permissions)
+        +getSessionStatus(): SessionStatus
+    }
+
+    class SyncManager {
+        +sendFullState()
+        +receiveFullState(json)
+        +sendAction(actionJson)
+        +receiveAction(actionJson)
+        +resolveConflict(localAction, remoteAction)
+        +bufferAction(actionJson)
+    }
+
+    class CommandManager {
+        +executeCommand(cmd: ICommand)
+        +undo()
+        +redo()
+        +clearHistory()
+        +canUndo(): bool
+        +canRedo(): bool
+    }
+
+    interface ICommand {
+        +execute()
+        +undo()
+    }
+
+    class SessionManager {
+        +sessionId: QString
+        +isAdmin: bool
+        +userList: QList<User>
+        +bannedUsers: QList<QString>
+        +currentStatus: SessionStatus
+        +getSessionId(): QString
+        +getActiveUsers(): QList<User>
+        +isUserBanned(userId: QString): bool
+        +banUser(userId: QString)
+        +updatePermissions(userId, permissions)
+    }
+
+    class Permissions {
+        +canDraw: bool
+        +canDelete: bool
+        +canEditOthers: bool
+        +isAdmin: bool
+    }
+
+    WhiteboardController o-- "1" WhiteboardModel
+    WhiteboardController o-- "1" CommandManager
+    WhiteboardController o-- "1" SyncManager
+    WhiteboardController o-- "1" Permissions
+
+    SessionController o-- "1" SessionManager
+    SessionController o-- "1" SyncManager
+
+    SyncManager o-- "1" NetworkService
+
+    CommandManager ..|> ICommand
+
+    SessionManager o-- "*" User
+    SessionManager o-- "*" Permissions
+}
+
+package Data {
+    class WhiteboardModel {
+        +elements: QList<WhiteboardElement>
+        +addElement(element: WhiteboardElement)
+        +removeElement(elementId: QString)
+        +getElementById(id: QString): WhiteboardElement
+        +clear()
+        +serialize(): QByteArray
+        +deserialize(data: QByteArray)
+    }
+
+    abstract class WhiteboardElement {
+        +id: QString
+        +ownerId: QString
+        +position: QPointF
+        +style: StyleDTO
+        +toJson(): QJsonObject
+        +fromJson(obj: QJsonObject)
+    }
+
+    class TextItem extends WhiteboardElement {
+        +text: QString
+        +font: QFont
+    }
+
+    class ShapeItem extends WhiteboardElement {
+        +shapeType: ShapeType
+        +points: QList<QPointF>
+        +fillColor: QColor
+    }
+
+    class DrawingItem extends WhiteboardElement {
+        +path: QPainterPath
+        +color: QColor
+        +thickness: int
+    }
+
+    class ImageItem extends WhiteboardElement {
+        +imageData: QByteArray
+        +size: QSizeF
+        +preview: QPixmap
+    }
+
+    WhiteboardModel o-- "*" WhiteboardElement
+    WhiteboardElement <|-- TextItem
+    WhiteboardElement <|-- ShapeItem
+    WhiteboardElement <|-- DrawingItem
+    WhiteboardElement <|-- ImageItem
+
+    class User {
+        +userId: QString
+        +name: QString
+        +status: UserStatus
+        +permissions: Permissions
+        +isAdmin(): bool
+    }
+
+    class UserDTO {
+        +userId: QString
+        +name: QString
+        +status: QString
+    }
+
+    class StyleDTO {
+        +color: QColor
+        +thickness: int
+        +penStyle: Qt::PenStyle
+        +font: QFont
+    }
+
+    class SessionDTO {
+        +sessionId: QString
+        +isAdmin: bool
+        +users: QList<UserDTO>
+        +bannedUserIds: QList<QString>
+    }
+
+    class PersistenceService {
+        +saveToFile(model: WhiteboardModel, path: QString)
+        +loadFromFile(path: QString): WhiteboardModel
+        +showSaveDialog(): QString
+        +showLoadDialog(): QString
+        +checkVersionCompatibility(fileData: QByteArray): bool
+    }
+
+    class NetworkService {
+        +initHost(sessionId: QString)
+        +initClient(sessionId: QString)
+        +sendData(json: QByteArray, targetId: QString)
+        +receiveData(json: QByteArray, fromId: QString)
+        +onUserConnected(userId: QString)
+        +onUserDisconnected(userId: QString)
+        +sendBan(userId: QString)
+    }
+
+    class JsonSerializer {
+        +serializeWhiteboard(model: WhiteboardModel): QByteArray
+        +deserializeWhiteboard(data: QByteArray): WhiteboardModel
+        +serializeSession(session: SessionManager): QJsonObject
+        +deserializeSession(obj: QJsonObject): SessionDTO
+    }
+
+    PersistenceService ..> WhiteboardModel
+    PersistenceService ..> WhiteboardElement
+    JsonSerializer ..> WhiteboardModel
+    JsonSerializer ..> SessionDTO
+    NetworkService ..> SessionDTO
+}
+
+' Inter-package relations
+Presentation::MainWindow ..> Metier::SessionController
+Presentation::MainWindow ..> Metier::WhiteboardController
+
+Metier::SyncManager ..> Data::NetworkService
+Metier::SessionManager ..> Data::SessionDTO
+Metier::WhiteboardController ..> Data::WhiteboardModel
+Metier::WhiteboardController ..> Data::WhiteboardElement
+Metier::SessionManager ..> Data::User
+Metier::CommandManager ..> Data::WhiteboardModel : modifies >
+Metier::CommandManager ..> Data::WhiteboardElement
+
+Presentation::UserListPanel ..> Data::UserDTO
+Presentation::CanvasView ..> Data::WhiteboardElement
+Presentation::StylePanel ..> Data::StyleDTO
+
+Presentation::ImageInsertDialog ..> Data::ImageItem
+
+@enduml

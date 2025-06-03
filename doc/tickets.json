@@ -1,0 +1,289 @@
+[
+  {
+    "epic": "Écriture de texte : Permettre de saisir du texte sur le tableau blanc",
+    "user_story": [
+      {
+        "user_story": "En tant qu'utilisateur je veux voir un tableau blanc pour pouvoir décrire mes idées dessus dans le but de pouvoir définir clairement mes idées",
+        "tickets": [
+          "Créer un composant QWidget ou QGraphicsView pour le canvas principal de dessin",
+          "Initialiser une scène de dessin avec gestion des coordonnées (QGraphicsScene ou équivalent custom)",
+          "Configurer un fond blanc par défaut et une grille optionnelle (calque léger)"
+        ]
+      },
+      {
+        "user_story": "En tant qu'utilisateur je veux écrire du texte dans le but de pouvoir écrire des idées clairement",
+        "tickets": [
+          "Permettre un clic sur le canvas pour placer un champ texte",
+          "Créer un QGraphicsTextItem (ou équivalent) avec police par défaut configurable",
+          "Rendre le champ texte éditable directement via double-clic",
+          "Implémenter le déplacement du champ texte via drag & drop",
+          "Supporter le redimensionnement de la zone de texte avec les poignées",
+          "Stocker le texte, position, taille et style dans un modèle de données structuré",
+          "Assurer l'annulation/refaire de l'ajout/modification du texte via système de commandes"
+        ]
+      }
+    ]
+  },
+  {
+    "epic": "Sessions et connexions : Création/rejoindre de salles pour collaborer",
+    "user_story": [
+      {
+        "user_story": "En tant qu'admin je veux pouvoir créer des salles dans le but de permettre aux autres de se connecter",
+        "tickets": [
+          "Créer une classe SessionManager pour gérer l'identité d'une session locale",
+          "Générer un ID de session unique (UUID + horodatage ou hash utilisateur)",
+          "Créer une interface 'Créer une session' avec bouton dédié",
+          "Initialiser le réseau en mode hôte P2P : ouverture du port, socket en écoute (Qt QUdpSocket ou QWebSocketServer selon le protocole choisi)",
+          "Afficher le code de session généré pour partage",
+          "Stocker la session localement (en mémoire) avec statut 'admin'",
+          "Préparer une structure de données de session partagée (utilisateurs connectés, état du tableau, droits...)"
+        ]
+      },
+      {
+        "user_story": "En tant qu'utilisateur je veux pouvoir rejoindre une session existante via un code de session dans le but de pouvoir rejoindre un groupe de travail",
+        "tickets": [
+          "Créer une interface de saisie de code de session et bouton 'Rejoindre'",
+          "Envoyer une requête de connexion à l’hôte via UDP ou WebSocket avec le code de session",
+          "Gérer les erreurs de connexion (invalide, timeout, refus)",
+          "Si connexion acceptée, initialiser le canal P2P (UDP ou WebSocket)",
+          "Transmettre les infos utilisateur (username, ID) à l’hôte",
+          "Afficher le statut de la connexion dans l’interface (ex: 'Connecté à la session XYZ')",
+          "Synchroniser automatiquement l’état de la session avec le client (cf US 5)"
+        ]
+      }
+    ]
+  },
+  {
+    "epic": "Collaboration temps réel : Synchronisation et diffusion immédiate des modifications",
+    "user_story": [
+      {
+        "user_story": "En tant qu'utilisateur je veux synchroniser tout mon tableau avec un nouveau client qui rejoint en cours de route dans le but de ne pas perdre des informations",
+        "tickets": [
+          "À l’arrivée d’un nouveau client, envoyer l’état complet du tableau depuis l’hôte",
+          "Définir un format JSON compact pour représenter tous les éléments du tableau (texte, formes, images...)",
+          "Créer une commande de synchronisation complète du tableau côté hôte",
+          "Créer un gestionnaire de réception de synchronisation côté client",
+          "Appliquer les éléments reçus au canvas local du client (création de tous les objets graphiques)",
+          "Gérer les identifiants uniques d’objets pour permettre la synchronisation future des actions",
+          "Afficher un message de synchronisation en cours / terminée à l’utilisateur"
+        ]
+      },
+      {
+        "user_story": "En tant qu'utilisateur je veux voir en temps réel les modifications effectuées par les autres participants dans le but de suivre les modifications des autres",
+        "tickets": [
+          "Créer un format JSON standardisé pour représenter chaque action utilisateur (ajout, suppression, déplacement, modification)",
+          "Implémenter l’envoi de chaque action utilisateur au moment de son exécution via le protocole réseau (UDP ou WebSocket)",
+          "Assigner un ID unique à chaque élément dessiné pour permettre les modifications synchronisées",
+          "Créer un gestionnaire de réception des actions distantes",
+          "Appliquer immédiatement les actions reçues sur le canvas local",
+          "Filtrer les doublons ou conflits en cas d’action simultanée (idempotence ou timestamps)",
+          "Ajouter un système de buffer si des actions arrivent pendant une synchronisation initiale"
+        ]
+      }
+    ]
+  },
+  {
+    "epic": "Dessin et modification d’éléments : Outils de dessin et édition d’objets sur le tableau",
+    "user_story": [
+      {
+        "user_story": "En tant qu'utilisateur je veux dessiner sur un tableau blanc dans le but de pouvoir définir mes idées",
+        "tickets": [
+          "Ajouter un bouton 'Texte' dans la barre d’outils pour activer le mode d’insertion de texte",
+          "Créer un outil 'Crayon' permettant de dessiner des traits à main levée (mousePress → mouseMove → mouseRelease)",
+          "Ajouter la capture des points et le rendu des courbes via QPainterPath ou QGraphicsPathItem",
+          "Ajouter la possibilité de choisir la couleur et l'épaisseur du trait (config locale)",
+          "Créer une structure de données pour sauvegarder les dessins (type, points, couleur, épaisseur, auteur)",
+          "Assigner un ID unique à chaque dessin pour gestion réseau",
+          "Ajouter la prise en compte du dessin libre dans la sérialisation JSON pour l’échange réseau",
+          "Envoyer chaque nouvelle courbe dessinée aux pairs à la fin du tracé"
+        ]
+      },
+      {
+        "user_story": "En tant qu'utilisateur je veux accéder aux outils de dessin via une barre d'outils dans le but de pouvoir accéder facilement aux différents outils disponibles",
+        "tickets": [
+          "Créer une barre d’outils horizontale ou verticale avec Qt (QToolBar ou layout custom)",
+          "Ajouter les boutons pour chaque outil de base : curseur, crayon, ligne, rectangle, cercle, flèche, texte, gomme",
+          "Ajouter des icônes explicites pour chaque outil (SVG ou PNG)",
+          "Afficher l’outil actif de manière visuelle (highlight ou cadre)",
+          "Permettre le changement d’outil à la volée sans réinitialiser l’état du tableau",
+          "Rendre la barre d’outils fixe ou flottante selon la résolution de la fenêtre",
+          "Prévoir un raccourci clavier pour chaque outil (ex: T pour texte, R pour rectangle, etc.)"
+        ]
+      },
+      {
+        "user_story": "En tant qu'utilisateur je veux dessiner des formes simples (cercles, rectangles, lignes, flèches) dans le but d’illustrer mes idées sur le tableau",
+        "tickets": [
+          "Ajouter des outils dans la barre d’outils pour : ligne, rectangle, ellipse, flèche",
+          "Gérer le tracé avec clic-début / drag / clic-fin pour définir les formes",
+          "Créer des classes ou objets QGraphicsItem custom pour chaque forme avec style (trait, remplissage)",
+          "Associer chaque forme à une structure de données (type, coordonnées, style, auteur, ID)",
+          "Supporter le redimensionnement après création via des poignées (handles)",
+          "Synchroniser les formes créées via messages réseau JSON envoyés aux autres utilisateurs",
+          "Ajouter un contrôle pour verrouiller le ratio (ex: Shift = carré ou cercle parfait)"
+        ]
+      },
+      {
+        "user_story": "En tant qu'utilisateur je veux pouvoir supprimer / modifier / bouger mes éléments sur le tableau blanc dans le but de pouvoir modifier mes idées",
+        "tickets": [
+          "Implémenter un mode 'sélection' via outil curseur",
+          "Permettre de cliquer sur un élément du tableau pour l’activer (focus visuel + handles de redimensionnement)",
+          "Permettre de déplacer l’élément sélectionné via drag & drop",
+          "Ajouter un bouton 'Supprimer' ou touche Del pour effacer un élément sélectionné",
+          "Permettre la modification du texte ou des propriétés graphiques (ex: couleur, taille)",
+          "Synchroniser chaque suppression, déplacement ou modification via un message réseau JSON",
+          "Gérer les conflits ou permissions si plusieurs utilisateurs modifient en même temps"
+        ]
+      },
+      {
+        "user_story": "En tant qu'utilisateur je veux changer la couleur, l'épaisseur et le style de mes traits dans le but de pouvoir définir plus clairement mes idées",
+        "tickets": [
+          "Créer un panneau ou barre flottante avec les options de style (couleur, épaisseur, style de trait)",
+          "Permettre de choisir la couleur via un QColorDialog ou palette prédéfinie",
+          "Ajouter un slider ou menu déroulant pour choisir l’épaisseur du trait",
+          "Ajouter un choix de style (plein, pointillé, tirets, etc.) via QPen::setStyle",
+          "Appliquer les choix en direct sur les nouveaux éléments dessinés",
+          "Inclure les styles dans les messages réseau lors de l’envoi d’un nouvel élément",
+          "Afficher les paramètres actuels dans la barre d’état ou à côté de l’outil actif"
+        ]
+      }
+    ]
+  },
+  {
+    "epic": "Navigation sur le tableau : Zoom, dézoom et déplacement (pan) du contenu",
+    "user_story": [
+      {
+        "user_story": "En tant qu'utilisateur je veux zoomer et dézoomer sur le tableau dans le but de pouvoir avoir une vue d'ensemble plus claire du tableau",
+        "tickets": [
+          "Ajouter un système de zoom sur le canvas (utiliser QGraphicsView::scale ou équivalent)",
+          "Gérer les événements molette pour zoomer/dézoomer centré sur la souris",
+          "Limiter le niveau de zoom (ex: min 10%, max 400%) pour éviter les cas extrêmes",
+          "Afficher dans un coin de l'écran le niveau de zoom actuel (ex: '150%')",
+          "Ajouter des raccourcis clavier (+ / -) et/ou boutons dans l’UI pour zoomer/dézoomer",
+          "Préserver la position actuelle du viewport lors du zoom (ne pas recentrer brutalement)"
+        ]
+      },
+      {
+        "user_story": "En tant qu'utilisateur je veux naviguer sur le tableau avec la souris dans le but de pouvoir naviguer plus facilement sur le tableau",
+        "tickets": [
+          "Ajouter un mode 'main' (pan) dans la barre d’outils ou avec raccourci (ex: espace)",
+          "Permettre le clic droit ou clic avec espace maintenu pour activer temporairement le déplacement",
+          "Gérer le drag de la scène avec QGraphicsView::translate ou équivalent",
+          "Maintenir la position relative du zoom lors du déplacement",
+          "Limiter le déplacement hors-bord si nécessaire (option configurable)",
+          "Assurer la fluidité du mouvement sans saccades sur grandes scènes"
+        ]
+      }
+    ]
+  },
+  {
+    "epic": "Sauvegarde et chargement local : Persistencer/charger le contenu du tableau",
+    "user_story": [
+      {
+        "user_story": "En tant qu'utilisateur je veux avoir une sauvegarde des tableaux en local dans le but de garder une trace et pouvoir revenir sur un ancien tableau",
+        "tickets": [
+          "Définir une structure JSON complète représentant l’état du tableau (éléments, positions, styles, auteurs, etc.)",
+          "Créer une fonction de sérialisation du tableau vers un objet JSON (ou QByteArray)",
+          "Créer un bouton 'Sauvegarder' dans l’UI avec choix de l’emplacement du fichier",
+          "Afficher un QFileDialog pour permettre la sélection du répertoire et nom du fichier",
+          "Écrire les données dans un fichier local avec extension .whiteboard",
+          "Ajouter une confirmation visuelle de la réussite de la sauvegarde"
+        ]
+      },
+      {
+        "user_story": "En tant qu'utilisateur je veux enregistrer et charger un tableau localement avec un fichier .whiteboard dans le but de sauvegarder et partager mes tableaux",
+        "tickets": [
+          "Créer une fonction d’export du tableau au format JSON dans un fichier .whiteboard",
+          "Créer un bouton 'Charger' dans l’UI pour ouvrir un tableau existant",
+          "Afficher un QFileDialog pour sélectionner un fichier .whiteboard",
+          "Lire et parser le fichier JSON et reconstruire les éléments du tableau",
+          "Effacer le contenu actuel avant chargement (avec confirmation si nécessaire)",
+          "Recréer tous les éléments sur le canvas avec leurs propriétés initiales (positions, styles, auteurs)",
+          "Vérifier la compatibilité des versions (fichier obsolète ou futur)",
+          "Ajouter un message de succès ou d’erreur selon le résultat du chargement"
+        ]
+      }
+    ]
+  },
+  {
+    "epic": "Identification & présence : Nom d’utilisateur et affichage de la liste des participants",
+    "user_story": [
+      {
+        "user_story": "En tant qu'utilisateur je veux pouvoir me donner un username pour qu'on puisse me reconnaitre dans le but de pouvoir être différencié des autres utilisateurs dans la room",
+        "tickets": [
+          "Créer un écran de démarrage avec champ de saisie pour le nom d'utilisateur + verif saisie (nom vide / lg max)",
+          "Inclure le nom d’utilisateur dans les paquets réseau pour identification",
+          "Afficher le nom de l’utilisateur sur les éléments qu’il crée (tooltip ou meta)",
+          "Afficher le nom dans la liste des utilisateurs (US suivante)"
+        ]
+      },
+      {
+        "user_story": "En tant qu'utilisateur je veux voir la liste des utilisateurs connectés à la session dans le but de voir qui a accès aux informations",
+        "tickets": [
+          "Créer un panneau latéral ou widget flottant affichant la liste des utilisateurs connectés",
+          "Afficher pour chaque utilisateur : nom, statut (admin, actif)",
+          "Mettre à jour dynamiquement la liste lors des connexions/déconnexions",
+          "Gérer la réception des infos utilisateurs via messages réseau (nouveau peer / disconnect)",
+          "Afficher une icône différente pour soi-même (optionnel)",
+          "Mettre en évidence les nouveaux arrivants pendant quelques secondes (optionnel)"
+        ]
+      }
+    ]
+  },
+  {
+    "epic": "Gestion admin & permissions : Bannissement et contrôle des droits d’accès",
+    "user_story": [
+      {
+        "user_story": "En tant qu'admin je veux pouvoir bannir un utilisateur de mon tableau blanc dans le but d’éviter les abus",
+        "tickets": [
+          "Ajouter une option 'Bannir' dans la liste des utilisateurs (visibilité réservée à l’admin)",
+          "Définir un message réseau spécifique pour le bannissement (avec ID utilisateur ciblé)",
+          "Faire quitter immédiatement la session au client banni (notification + fermeture socket)",
+          "Empêcher la reconnexion de l’utilisateur banni à la session (même session ID)",
+          "Maintenir une liste de bannis côté hôte pendant toute la durée de la session",
+          "Afficher une confirmation à l’admin avant de bannir (optionnel)"
+        ]
+      },
+      {
+        "user_story": "En tant qu'admin je veux pouvoir gérer les permissions des utilisateurs dans le but de gérer ma session",
+        "tickets": [
+          "Créer une interface de gestion des utilisateurs (droits d’écriture, suppression, etc.)",
+          "Afficher une liste avec cases à cocher pour chaque permission par utilisateur",
+          "Envoyer un message réseau contenant les permissions modifiées vers les clients concernés",
+          "Faire respecter les droits côté client (ex: interdire suppression si 'canDelete' = false)",
+          "Permettre à l’admin de modifier ses propres droits (lecture seule, verrou temporaire)",
+          "Afficher visuellement dans la liste des utilisateurs les droits actifs pour chacun"
+        ]
+      }
+    ]
+  },
+  {
+    "epic": "Edition des éléments d’autrui : Modification/suppression des objets créés par d’autres",
+    "user_story": [
+      {
+        "user_story": "En tant qu'utilisateur je veux pouvoir supprimer / modifier les éléments des autres dans le but de pouvoir corriger les idées des autres",
+        "tickets": [
+          "Associer chaque élément à son auteur via un champ 'ownerId' dans la structure de données",
+          "Par défaut, autoriser la modification des éléments des autres (configurable dans les permissions)",
+          "Afficher dans l’UI une indication visuelle que l’élément appartient à un autre utilisateur (nom, couleur, surbrillance)"
+        ]
+      }
+    ]
+  },
+  {
+    "epic": "Images sur le tableau : Insertion et affichage d’images",
+    "user_story": [
+      {
+        "user_story": "En tant qu'utilisateur je veux pouvoir mettre des images sur le tableau dans le but de pouvoir rajouter des informations pertinentes sur le tableau",
+        "tickets": [
+          "Ajouter un bouton 'Insérer image' dans la barre d’outils",
+          "Ouvrir un QFileDialog pour choisir un fichier image local (png, jpg, svg)",
+          "Charger l’image et l’afficher dans une QGraphicsPixmapItem sur le tableau",
+          "Permettre de redimensionner et déplacer l’image avec la souris",
+          "Inclure l’image dans la structure de données avec position, taille, auteur",
+          "Encoder l’image (base64 ou lien temporaire) pour transmission réseau",
+          "Afficher une preview rapide en cours de chargement sur les autres clients"
+        ]
+      }
+    ]
+  }
+]
