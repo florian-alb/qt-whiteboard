@@ -1,37 +1,30 @@
 #pragma once
 #include <QObject>
-#include <QTcpServer>
 #include <QTcpSocket>
+#include <QHostAddress>
 #include <QJsonObject>
+#include <QVector>
+#include <QPair>
 
 class CollaborationClient : public QObject {
     Q_OBJECT
 public:
-    explicit CollaborationClient(quint16 listenPort, QObject* parent = nullptr);
-
-    /// Se connecter à un pair donné (IP + port décodés du "code unique")
-    Q_SLOT void connectToPeer(const QHostAddress& peerIp, quint16 peerPort);
-
-    /// Émettre un message JSON vers tous les pairs connectés
-    Q_SLOT void sendCreateText(const QString& id, int x, int y, const QString& text);
-    Q_SLOT void sendUpdateText(const QString& id, const QString& text);
-    Q_SLOT void sendDeleteText(const QString& id);
+    explicit CollaborationClient(const QHostAddress& serverIp,
+                                 quint16 serverPort,
+                                 QObject* parent = nullptr);
+    Q_SLOT void sendPoint(int x, int y);
 
 signals:
-    // reçus du réseau
-    void createTextReceived(const QString& id, int x, int y, const QString& text);
-    void updateTextReceived(const QString& id, const QString& text);
-    void deleteTextReceived(const QString& id);
+    void pointReceived(int x, int y);
 
 private slots:
-    void onNewConnection();
-    void onSocketReadyRead();
-    void onPeerDisconnected();
+    void onReadyRead();
+    void onServerDisconnected();
 
 private:
-    void broadcastJson(const QJsonObject& obj);
-    void handleIncomingJson(const QJsonObject& obj);
+    void connectToServer(const QHostAddress& ip, quint16 port);
 
-    QTcpServer*   m_server;
-    QList<QTcpSocket*> m_peers;
+    QTcpSocket* m_socket;
+    quint16 m_serverPort;
+    QVector<QPair<QHostAddress, quint16>> m_servers;
 };

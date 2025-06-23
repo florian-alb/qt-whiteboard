@@ -1,4 +1,4 @@
-#include "MyGraphicsView.h"
+#include "mygraphicsview.h"
 
 void MyGraphicsView::mouseReleaseEvent(QMouseEvent* event)
 {
