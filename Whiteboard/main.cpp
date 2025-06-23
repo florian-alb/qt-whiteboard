@@ -13,8 +13,7 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
 
     // --- Setup réseau P2P ---
-    quint16 localPort = QInputDialog::getInt(nullptr, "Port local",
-                                             "Sur quel port voulez-vous écouter ?", 5555);
+    quint16 localPort = QInputDialog::getInt(nullptr, "Port local", "Sur quel port voulez-vous écouter ?", 5555);
     CollaborationClient net(localPort);
 
     // Demander l'IP:port du peer sous la forme "192.168.1.42:5555"
