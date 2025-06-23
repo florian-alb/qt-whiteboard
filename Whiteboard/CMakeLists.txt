@@ -15,6 +15,7 @@ qt_add_executable(appWhiteboard
     CollaborationClient.cpp
     mygraphicsview.h mygraphicsview.cpp
     boardwidget.h boardwidget.cpp
+    collaborationserver.h collaborationserver.cpp
 )
 
 set_target_properties(appWhiteboard PROPERTIES

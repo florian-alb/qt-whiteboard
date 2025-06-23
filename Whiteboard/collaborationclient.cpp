@@ -1,74 +1,67 @@
 #include "CollaborationClient.h"
+#include "collaborationserver.h"
 #include <QJsonDocument>
-#include <QHostAddress>
-#include <QJsonValue>
+#include <QJsonArray>
+#include <QDebug>
 
-CollaborationClient::CollaborationClient(quint16 listenPort, QObject* parent)
-    : QObject(parent), m_server(new QTcpServer(this))
+CollaborationClient::CollaborationClient(const QHostAddress& serverIp,
+                                         quint16 serverPort,
+                                         QObject* parent)
+    : QObject(parent)
+    , m_socket(new QTcpSocket(this))
+    , m_serverPort(serverPort)
 {
-    connect(m_server, &QTcpServer::newConnection, this, &CollaborationClient::onNewConnection);
-    m_server->listen(QHostAddress::Any, listenPort);
+    connect(m_socket, &QTcpSocket::readyRead,
+            this, &CollaborationClient::onReadyRead);
+    connect(m_socket, &QTcpSocket::disconnected,
+            this, &CollaborationClient::onServerDisconnected);
+    connectToServer(serverIp, serverPort);
 }
 
-void CollaborationClient::connectToPeer(const QHostAddress& ip, quint16 port)
+void CollaborationClient::connectToServer(const QHostAddress& ip, quint16 port)
 {
-    QTcpSocket* sock = new QTcpSocket(this);
-    connect(sock, &QTcpSocket::readyRead, this, &CollaborationClient::onReadyRead);
-    connect(sock, &QTcpSocket::disconnected, this, &CollaborationClient::onDisconnected);
-    sock->connectToHost(ip, port);
-    if (sock->waitForConnected(2000)) {
-        m_peers << sock;
-    } else {
-        sock->deleteLater();
-    }
-}
-
-void CollaborationClient::onNewConnection()
-{
-    while (m_server->hasPendingConnections()) {
-        QTcpSocket* sock = m_server->nextPendingConnection();
-        connect(sock, &QTcpSocket::readyRead, this, &CollaborationClient::onReadyRead);
-        connect(sock, &QTcpSocket::disconnected, this, &CollaborationClient::onDisconnected);
-        m_peers << sock;
-    }
-}
-
-void CollaborationClient::onReadyRead()
-{
-    QTcpSocket* sock = qobject_cast<QTcpSocket*>(sender());
-    QByteArray data = sock->readAll();
-    auto doc = QJsonDocument::fromJson(data);
-    if (doc.isObject()) handleMessage(doc.object());
-}
-
-void CollaborationClient::onDisconnected()
-{
-    QTcpSocket* sock = qobject_cast<QTcpSocket*>(sender());
-    m_peers.removeAll(sock);
-    sock->deleteLater();
+    qDebug() << "Connecting to server" << ip.toString() << port;
+    m_socket->abort();
+    m_socket->connectToHost(ip, port);
 }
 
 void CollaborationClient::sendPoint(int x, int y)
 {
-    QJsonObject obj;
-    obj["type"] = "point";
-    obj["x"] = x;
-    obj["y"] = y;
-    broadcast(obj);
+    QJsonObject msg;
+    msg["type"] = "point";
+    msg["x"] = x;
+    msg["y"] = y;
+    m_socket->write(QJsonDocument(msg).toJson(QJsonDocument::Compact));
 }
 
-void CollaborationClient::broadcast(const QJsonObject& obj)
+void CollaborationClient::onReadyRead()
 {
-    QJsonDocument doc(obj);
-    QByteArray bytes = doc.toJson(QJsonDocument::Compact);
-    for (auto* sock : m_peers) sock->write(bytes);
+    QByteArray data = m_socket->readAll();
+    auto doc = QJsonDocument::fromJson(data);
+    if (!doc.isObject()) return;
+    QJsonObject obj = doc.object();
+    QString type = obj.value("type").toString();
+    if (type == "point") {
+       emit pointReceived(obj.value("x").toInt(), obj.value("y").toInt());
+    } else if (type == "clientList") {
+        m_servers.clear();
+        for (const QJsonValue& v : obj.value("clients").toArray()) {
+            auto o = v.toObject();
+            m_servers.append({QHostAddress(o.value("ip").toString()), (quint16)o.value("port").toInt()});
+        }
+    }
 }
 
-void CollaborationClient::handleMessage(const QJsonObject& obj)
+void CollaborationClient::onServerDisconnected()
 {
-    if (obj.value("type").toString() == "point") {
-        int x = obj.value("x").toInt();
-        int y = obj.value("y").toInt();
-        emit pointReceived(x, y);
+    qDebug() << "Server disconnected, electing new server";
+    if (!m_servers.isEmpty()) {
+        auto candidate = m_servers.first();
+        // start backup server locally
+        CollaborationServer* backup = new CollaborationServer(m_serverPort, this);
+        // remove self from server list
+        m_servers.removeFirst();
+        // reconnect client socket to new server
+        connectToServer(candidate.first, candidate.second);
     }
 }

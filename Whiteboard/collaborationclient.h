@@ -1,24 +1,30 @@
 #pragma once
 #include <QObject>
-#include <QTcpServer>
 #include <QTcpSocket>
+#include <QHostAddress>
 #include <QJsonObject>
+#include <QVector>
+#include <QPair>
 
 class CollaborationClient : public QObject {
     Q_OBJECT
 public:
-    explicit CollaborationClient(quint16 listenPort, QObject* parent = nullptr);
-    Q_SLOT void connectToPeer(const QHostAddress& ip, quint16 port);
+    explicit CollaborationClient(const QHostAddress& serverIp,
+                                 quint16 serverPort,
+                                 QObject* parent = nullptr);
     Q_SLOT void sendPoint(int x, int y);
+
 signals:
     void pointReceived(int x, int y);
+
 private slots:
-    void onNewConnection();
     void onReadyRead();
-    void onDisconnected();
+    void onServerDisconnected();
+
 private:
-    void broadcast(const QJsonObject& obj);
-    void handleMessage(const QJsonObject& obj);
-    QTcpServer* m_server;
-    QList<QTcpSocket*> m_peers;
+    void connectToServer(const QHostAddress& ip, quint16 port);
+
+    QTcpSocket* m_socket;
+    quint16 m_serverPort;
+    QVector<QPair<QHostAddress, quint16>> m_servers;
 };
