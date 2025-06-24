@@ -11,11 +11,15 @@ qt_standard_project_setup(REQUIRES 6.8)
 
 qt_add_executable(appWhiteboard
     main.cpp
-    CollaborationClient.h
-    CollaborationClient.cpp
+
+
     mygraphicsview.h mygraphicsview.cpp
     boardwidget.h boardwidget.cpp
-    collaborationserver.h collaborationserver.cpp
+    whiteboardserver.h whiteboardserver.cpp
+    whiteboardclient.h whiteboardclient.cpp
+    whiteboardcanvas.h whiteboardcanvas.cpp
+    penciltool.h penciltool.cpp
+    tool.h
 )
 
 set_target_properties(appWhiteboard PROPERTIES
