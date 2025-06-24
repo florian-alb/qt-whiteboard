@@ -1,45 +1,65 @@
+// main.cpp
 #include <QApplication>
-#include <QInputDialog>
-#include <QHostAddress>
 #include <QDebug>
+#include <QHostAddress>
+#include <QInputDialog>
 #include <QMessageBox>
-#include "collaborationserver.h"
-#include "CollaborationClient.h"
-#include "boardwidget.h"
+#include <QtNetwork/qhostaddress.h>
 
-int main(int argc, char* argv[])
-{
-    QApplication a(argc, argv);
-    bool isServer = QMessageBox::question(nullptr,
-                                          "Mode Selection",
-                                          "Run as server?", QMessageBox::Yes|QMessageBox::No) == QMessageBox::Yes;
-    quint16 port = QInputDialog::getInt(nullptr,
-                                        isServer ? "Server Port" : "Server Port",
-                                        "Port:", 12345, 1024, 65535, 1);
+#include "penciltool.h"
+#include "whiteboardcanvas.h"
+#include "whiteboardclient.h"
+#include "whiteboardserver.h"
+int main(int argc, char *argv[]) {
+  QApplication app(argc, argv);
 
-    if (isServer) {
-        qDebug() << "Starting as server on port" << port;
-        CollaborationServer server(port);
+  // 1) Choix du mode
+  bool isServer = (QMessageBox::question(nullptr, "Mode de démarrage",
+                                         "Exécuter en tant que serveur ?",
+                                         QMessageBox::Yes | QMessageBox::No) ==
+                   QMessageBox::Yes);
 
-        CollaborationClient client(QHostAddress("0.0.0.0"), port);
-        BoardWidget board;
-        board.show();
-        QObject::connect(&board, &BoardWidget::pointCreated,
-                         &client, &CollaborationClient::sendPoint);
-        QObject::connect(&client, &CollaborationClient::pointReceived,
-                         &board, &BoardWidget::addPoint);
+  // 2) Récupération du port
+  quint16 serverPort = static_cast<quint16>(
+      QInputDialog::getInt(nullptr, isServer ? "Port serveur" : "Port serveur",
+                           "Numéro de port :", 12345, 1024, 65535, 1));
 
-        return a.exec();
-    } else {
-        QString host = QInputDialog::getText(nullptr,
-                                             "Server IP", "Enter server IP:", QLineEdit::Normal, "10.31.39.77");
-        CollaborationClient client(QHostAddress(host), port);
-        BoardWidget board;
-        board.show();
-        QObject::connect(&board, &BoardWidget::pointCreated,
-                         &client, &CollaborationClient::sendPoint);
-        QObject::connect(&client, &CollaborationClient::pointReceived,
-                         &board, &BoardWidget::addPoint);
-        return a.exec();
-    }
+  // 3) Common setup du canvas et de l’outil
+  WhiteboardCanvas *canvas = new WhiteboardCanvas;
+  QString userId = QString::number(arc4random());
+  PencilTool *pencil = new PencilTool(userId);
+  canvas->setTool(pencil);
+
+  WhiteboardServer *server = nullptr;
+  QHostAddress serverAddress;
+
+  if (isServer) {
+    // --- Mode Serveur + Client local ---
+    qDebug() << "Démarrage du serveur sur le port" << serverPort;
+    server = new WhiteboardServer(serverPort);
+    serverAddress = QHostAddress::LocalHost;
+  } else {
+    // --- Mode Client seul ---
+    bool ok;
+    QString host = QInputDialog::getText(
+        nullptr, "IP du serveur",
+        "Entrez l'adresse du serveur (ex: 192.168.1.10) :", QLineEdit::Normal,
+        "127.0.0.1", &ok);
+    if (!ok)
+      return 0;
+
+    serverAddress = QHostAddress(host);
+  }
+
+  WhiteboardClient client(QHostAddress(serverAddress), serverPort);
+
+  QObject::connect(canvas, &WhiteboardCanvas::sendJson, &client,
+                   &WhiteboardClient::sendMessage);
+
+  QObject::connect(&client, &WhiteboardClient::messageReceived, canvas,
+                   &WhiteboardCanvas::applyRemote);
+
+  canvas->show();
+
+  return app.exec();
 }
