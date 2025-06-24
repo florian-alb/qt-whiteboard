@@ -1,0 +1,9 @@
+/Users/flo/Desktop/ynov/desktop/qt-whiteboard/build/CMakeFiles/appWhiteboard.dir
+/Users/flo/Desktop/ynov/desktop/qt-whiteboard/build/CMakeFiles/edit_cache.dir
+/Users/flo/Desktop/ynov/desktop/qt-whiteboard/build/CMakeFiles/rebuild_cache.dir
+/Users/flo/Desktop/ynov/desktop/qt-whiteboard/build/CMakeFiles/list_install_components.dir
+/Users/flo/Desktop/ynov/desktop/qt-whiteboard/build/CMakeFiles/install.dir
+/Users/flo/Desktop/ynov/desktop/qt-whiteboard/build/CMakeFiles/install/local.dir
+/Users/flo/Desktop/ynov/desktop/qt-whiteboard/build/CMakeFiles/install/strip.dir
+/Users/flo/Desktop/ynov/desktop/qt-whiteboard/build/CMakeFiles/appWhiteboard_autogen_timestamp_deps.dir
+/Users/flo/Desktop/ynov/desktop/qt-whiteboard/build/CMakeFiles/appWhiteboard_autogen.dir

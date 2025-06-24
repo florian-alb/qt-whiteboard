@@ -1,45 +1,35 @@
 #include <QApplication>
-#include <QInputDialog>
-#include <QHostAddress>
-#include <QDebug>
-#include <QMessageBox>
-#include "collaborationserver.h"
-#include "CollaborationClient.h"
-#include "boardwidget.h"
+#include "WhiteboardServer.h"
+#include "WhiteboardClient.h"
+#include "WhiteboardCanvas.h"
+#include "PencilTool.h"
 
-int main(int argc, char* argv[])
+int main(int argc, char **argv)
 {
     QApplication a(argc, argv);
-    bool isServer = QMessageBox::question(nullptr,
-                                          "Mode Selection",
-                                          "Run as server?", QMessageBox::Yes|QMessageBox::No) == QMessageBox::Yes;
-    quint16 port = QInputDialog::getInt(nullptr,
-                                        isServer ? "Server Port" : "Server Port",
-                                        "Port:", 12345, 1024, 65535, 1);
 
-    if (isServer) {
-        qDebug() << "Starting as server on port" << port;
-        CollaborationServer server(port);
+    // 1) Start server (in a real app, run separate process)
+    WhiteboardServer server(12345);
 
-        CollaborationClient client(QHostAddress("0.0.0.0"), port);
-        BoardWidget board;
-        board.show();
-        QObject::connect(&board, &BoardWidget::pointCreated,
-                         &client, &CollaborationClient::sendPoint);
-        QObject::connect(&client, &CollaborationClient::pointReceived,
-                         &board, &BoardWidget::addPoint);
+    // 2) Create client UI
+    QWidget window;
+    QVBoxLayout *layout = new QVBoxLayout(&window);
+    WhiteboardCanvas *canvas = new WhiteboardCanvas;
+    layout->addWidget(canvas);
 
-        return a.exec();
-    } else {
-        QString host = QInputDialog::getText(nullptr,
-                                             "Server IP", "Enter server IP:", QLineEdit::Normal, "10.31.39.77");
-        CollaborationClient client(QHostAddress(host), port);
-        BoardWidget board;
-        board.show();
-        QObject::connect(&board, &BoardWidget::pointCreated,
-                         &client, &CollaborationClient::sendPoint);
-        QObject::connect(&client, &CollaborationClient::pointReceived,
-                         &board, &BoardWidget::addPoint);
-        return a.exec();
-    }
+    WhiteboardClient *client = new WhiteboardClient(QUrl("ws://localhost:12345"));
+    QObject::connect(client, &WhiteboardClient::connected, [&]()
+                     { qDebug() << "Connected"; });
+    QObject::connect(client, &WhiteboardClient::messageReceived,
+                     canvas, &WhiteboardCanvas::applyRemote);
+    QObject::connect(canvas, &WhiteboardCanvas::sendJson,
+                     client, &WhiteboardClient::sendMessage);
+
+    // 3) Install pencil tool
+    static const QString userId = QString::number(qrand());
+    PencilTool *pencil = new PencilTool(userId, &window);
+    canvas->setTool(pencil);
+
+    window.show();
+    return a.exec();
 }
