@@ -7,7 +7,7 @@
 				{
 					"build" : ".",
 					"hasInstallRule" : true,
-					"jsonFile" : "directory-.-Debug-b8d7773784ded0a1acf4.json",
+					"jsonFile" : "directory-.-Debug-c2d23c9973e0086519c6.json",
 					"minimumCMakeVersion" : 
 					{
 						"string" : "3.16"
@@ -44,7 +44,7 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "appWhiteboard::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-appWhiteboard-Debug-661ca2196de6a1f167ce.json",
+					"jsonFile" : "target-appWhiteboard-Debug-b40da06bd2dbbf2f635e.json",
 					"name" : "appWhiteboard",
 					"projectIndex" : 0
 				},
