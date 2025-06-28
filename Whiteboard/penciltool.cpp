@@ -98,6 +98,14 @@ void PencilTool::onRemoteJson(const QJsonObject &msg) {
     return;
 
   QString action = props["action"].toString();
+  
+  // Ignore eraser messages
+  if (props.contains("tool") && props["tool"].toString() == "eraser") {
+    return;
+  }
+  if (action.startsWith("erase_")) {
+    return;
+  }
 
   if (action == "draw_stroke") {
     // Nouveau format : réception d'un trait complet

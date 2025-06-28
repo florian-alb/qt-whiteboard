@@ -2,6 +2,8 @@
 #include <QApplication>
 #include <QDebug>
 #include <QFileDialog>
+#include <QFrame>
+#include <QScreen>
 #include <QHBoxLayout>
 #include <QHostAddress>
 #include <QInputDialog>
@@ -11,8 +13,10 @@
 #include <QVBoxLayout>
 #include <QWidget>
 #include <QtNetwork/qhostaddress.h>
+#include <QRandomGenerator>
 
 #include "circletool.h"
+#include "erasertool.h"
 #include "penciltool.h"
 #include "rectangletool.h"
 #include "texttool.h"
@@ -37,21 +41,52 @@ int main(int argc, char *argv[]) {
   // 3) Création de la fenêtre principale
   QWidget *mainWindow = new QWidget;
   mainWindow->setWindowTitle("Tableau Blanc Collaboratif");
-  mainWindow->resize(1000, 700);
+  mainWindow->resize(1200, 800);
+  mainWindow->setMinimumSize(800, 600);
+  
+  // Style de la fenêtre principale
+  mainWindow->setStyleSheet("background-color: #f8f9fa;");
+  
+  // Centrer la fenêtre sur l'écran
+  QScreen *screen = QApplication::primaryScreen();
+  if (screen) {
+    QRect screenGeometry = screen->geometry();
+    int x = (screenGeometry.width() - mainWindow->width()) / 2;
+    int y = (screenGeometry.height() - mainWindow->height()) / 2;
+    mainWindow->move(x, y);
+  }
 
   // 4) Création du layout principal
   QVBoxLayout *mainLayout = new QVBoxLayout(mainWindow);
-  mainLayout->setSpacing(5);
-  mainLayout->setContentsMargins(10, 10, 10, 10);
+  mainLayout->setSpacing(15);
+  mainLayout->setContentsMargins(20, 20, 20, 20);
 
-  // 5) Création de la barre d'outils
-  QHBoxLayout *toolbarLayout = new QHBoxLayout;
-  toolbarLayout->setSpacing(10);
+  QWidget *toolbarContainer = new QWidget;
+  toolbarContainer->setFixedHeight(70);
+  toolbarContainer->setMaximumWidth(1000);
+  toolbarContainer->setStyleSheet(
+    "background-color: white; "
+    "border: 1px solid #e1e5e9; "
+    "border-radius: 20px; "
+    "margin: 0px 20px;");
+  
+  QHBoxLayout *toolbarLayout = new QHBoxLayout(toolbarContainer);
+  toolbarLayout->setSpacing(12);
+  toolbarLayout->setContentsMargins(20, 15, 20, 15);
+  toolbarLayout->setAlignment(Qt::AlignCenter);
 
   QPushButton *pencilButton = new QPushButton("✏️ Crayon");
   QPushButton *rectangleButton = new QPushButton("⬜ Rectangle");
   QPushButton *circleButton = new QPushButton("⭕ Cercle");
   QPushButton *textButton = new QPushButton("📝 Texte");
+  QPushButton *eraserButton = new QPushButton("🧱 Gomme");
+  
+  // Séparateur visuel
+  QFrame *separator = new QFrame;
+  separator->setFrameShape(QFrame::VLine);
+  separator->setFrameShadow(QFrame::Sunken);
+  separator->setStyleSheet("color: #dee2e6; margin: 5px 0;");
+  
   QPushButton *saveButton = new QPushButton("💾 Sauvegarder");
   QPushButton *loadButton = new QPushButton("📂 Charger");
 
@@ -60,69 +95,120 @@ int main(int argc, char *argv[]) {
   rectangleButton->setCheckable(true);
   circleButton->setCheckable(true);
   textButton->setCheckable(true);
+  eraserButton->setCheckable(true);
   pencilButton->setChecked(true); // Crayon par défaut
 
   // Taille des boutons
-  pencilButton->setMinimumHeight(40);
-  rectangleButton->setMinimumHeight(40);
-  circleButton->setMinimumHeight(40);
-  textButton->setMinimumHeight(40);
-  saveButton->setMinimumHeight(40);
-  loadButton->setMinimumHeight(40);
+  pencilButton->setMinimumSize(140, 45);
+  rectangleButton->setMinimumSize(140, 45);
+  circleButton->setMinimumSize(140, 45);
+  textButton->setMinimumSize(140, 45);
+  eraserButton->setMinimumSize(140, 45);
+  saveButton->setMinimumSize(140, 45);
+  loadButton->setMinimumSize(140, 45);
+  
+  pencilButton->setMaximumHeight(45);
+  rectangleButton->setMaximumHeight(45);
+  circleButton->setMaximumHeight(45);
+  textButton->setMaximumHeight(45);
+  eraserButton->setMaximumHeight(45);
+  saveButton->setMaximumHeight(45);
+  loadButton->setMaximumHeight(45);
+  
+  pencilButton->setCursor(Qt::PointingHandCursor);
+  rectangleButton->setCursor(Qt::PointingHandCursor);
+  circleButton->setCursor(Qt::PointingHandCursor);
+  textButton->setCursor(Qt::PointingHandCursor);
+  eraserButton->setCursor(Qt::PointingHandCursor);
+  saveButton->setCursor(Qt::PointingHandCursor);
+  loadButton->setCursor(Qt::PointingHandCursor);
 
-  // Style des boutons
-  QString buttonStyle = "QPushButton {"
-                        "  background-color: #f0f0f0;"
-                        "  border: 2px solid #c0c0c0;"
-                        "  border-radius: 5px;"
-                        "  padding: 8px 16px;"
-                        "  font-size: 14px;"
-                        "  font-weight: bold;"
-                        "}"
-                        "QPushButton:hover {"
-                        "  background-color: #e0e0e0;"
-                        "  border-color: #a0a0a0;"
-                        "}"
-                        "QPushButton:checked {"
-                        "  background-color: #0078d4;"
-                        "  color: white;"
-                        "  border-color: #005a9e;"
-                        "}"
-                        "QPushButton:pressed {"
-                        "  background-color: #005a9e;"
-                        "}";
+  // Style moderne des boutons
+  QString toolButtonStyle = 
+    "QPushButton {"
+    "  background-color: #f8f9fa;"
+    "  border: 2px solid #dee2e6;"
+    "  border-radius: 6px;"
+    "  padding: 6px 12px;"
+    "  font-weight: bold;"
+    "  color: #495057;"
+    "}"
+    "QPushButton:hover {"
+    "  background-color: #e9ecef;"
+    "  border-color: #adb5bd;"
+    "}"
+    "QPushButton:checked {"
+    "  background-color: #007bff;"
+    "  color: white;"
+    "  border-color: #0056b3;"
+    "}"
+    "QPushButton:pressed {"
+    "  background-color: #0056b3;"
+    "}";
+    
+  QString actionButtonStyle = 
+    "QPushButton {"
+    "  background-color: #28a745;"
+    "  border: 2px solid #1e7e34;"
+    "  border-radius: 6px;"
+    "  padding: 6px 12px;"
+    "  font-weight: bold;"
+    "  color: white;"
+    "}"
+    "QPushButton:hover {"
+    "  background-color: #218838;"
+    "  border-color: #1c7430;"
+    "}"
+    "QPushButton:pressed {"
+    "  background-color: #1c7430;"
+    "}";
 
-  pencilButton->setStyleSheet(buttonStyle);
-  rectangleButton->setStyleSheet(buttonStyle);
-  circleButton->setStyleSheet(buttonStyle);
-  textButton->setStyleSheet(buttonStyle);
-  saveButton->setStyleSheet(buttonStyle);
-  loadButton->setStyleSheet(buttonStyle);
+  // Application des styles
+  pencilButton->setStyleSheet(toolButtonStyle);
+  rectangleButton->setStyleSheet(toolButtonStyle);
+  circleButton->setStyleSheet(toolButtonStyle);
+  textButton->setStyleSheet(toolButtonStyle);
+  eraserButton->setStyleSheet(toolButtonStyle);
+  saveButton->setStyleSheet(actionButtonStyle);
+  loadButton->setStyleSheet(actionButtonStyle);
 
+  // Ajout des widgets à la toolbar avec espacement centré
+  toolbarLayout->addStretch();
   toolbarLayout->addWidget(pencilButton);
   toolbarLayout->addWidget(rectangleButton);
   toolbarLayout->addWidget(circleButton);
   toolbarLayout->addWidget(textButton);
+  toolbarLayout->addWidget(eraserButton);
+  toolbarLayout->addWidget(separator);
   toolbarLayout->addWidget(saveButton);
   toolbarLayout->addWidget(loadButton);
-  toolbarLayout->addStretch(); // Espace flexible à droite
+  toolbarLayout->addStretch();
+  
+  // Création d'un conteneur pour centrer la barre d'outils
+  QHBoxLayout *toolbarCenterLayout = new QHBoxLayout();
+  toolbarCenterLayout->addStretch();
+  toolbarCenterLayout->addWidget(toolbarContainer);
+  toolbarCenterLayout->addStretch();
+  toolbarCenterLayout->setContentsMargins(0, 0, 0, -20); // Chevauchement négatif
 
-  mainLayout->addLayout(toolbarLayout);
+  mainLayout->addLayout(toolbarCenterLayout);
 
   // 6) Création du canvas et des outils
   WhiteboardCanvas *canvas = new WhiteboardCanvas;
-  QString userId = QString::number(arc4random());
+  QString userId = QString::number(QRandomGenerator::global()->generate());
 
   PencilTool *pencilTool = new PencilTool(userId);
   RectangleTool *rectangleTool = new RectangleTool(userId);
   CircleTool *circleTool = new CircleTool(userId);
   TextTool *textTool = new TextTool(userId, canvas);
+  EraserTool *eraserTool = new EraserTool(userId);
 
-  // Ajouter les quatre outils au canvas
+  // Ajouter les cinq outils au canvas
   canvas->addTool(pencilTool);
   canvas->addTool(rectangleTool);
   canvas->addTool(circleTool);
   canvas->addTool(textTool);
+  canvas->addTool(eraserTool);
 
   // Outil par défaut
   canvas->setActiveTool(pencilTool);
@@ -134,6 +220,7 @@ int main(int argc, char *argv[]) {
     rectangleButton->setChecked(false);
     circleButton->setChecked(false);
     textButton->setChecked(false);
+    eraserButton->setChecked(false);
   });
 
   QObject::connect(rectangleButton, &QPushButton::clicked, [=]() {
@@ -142,6 +229,7 @@ int main(int argc, char *argv[]) {
     pencilButton->setChecked(false);
     circleButton->setChecked(false);
     textButton->setChecked(false);
+    eraserButton->setChecked(false);
   });
 
   QObject::connect(circleButton, &QPushButton::clicked, [=]() {
@@ -150,6 +238,7 @@ int main(int argc, char *argv[]) {
     pencilButton->setChecked(false);
     rectangleButton->setChecked(false);
     textButton->setChecked(false);
+    eraserButton->setChecked(false);
   });
 
   QObject::connect(textButton, &QPushButton::clicked, [=]() {
@@ -158,6 +247,16 @@ int main(int argc, char *argv[]) {
     pencilButton->setChecked(false);
     rectangleButton->setChecked(false);
     circleButton->setChecked(false);
+    eraserButton->setChecked(false);
+  });
+  
+  QObject::connect(eraserButton, &QPushButton::clicked, [=]() {
+    canvas->setActiveTool(eraserTool);
+    eraserButton->setChecked(true);
+    pencilButton->setChecked(false);
+    rectangleButton->setChecked(false);
+    circleButton->setChecked(false);
+    textButton->setChecked(false);
   });
 
   // 8) Connexion des boutons de sauvegarde/chargement
@@ -185,7 +284,19 @@ int main(int argc, char *argv[]) {
     }
   });
 
-  mainLayout->addWidget(canvas);
+  // Conteneur pour le canvas avec style et z-index inférieur à la toolbar
+  QWidget *canvasContainer = new QWidget;
+  canvasContainer->setStyleSheet(
+    "background-color: white; "
+    "border: 1px solid #e1e5e9; "
+    "border-radius: 12px; "
+    "margin-top: 10px;");
+  
+  QVBoxLayout *canvasLayout = new QVBoxLayout(canvasContainer);
+  canvasLayout->setContentsMargins(15, 35, 15, 15); // Marge supérieure plus grande pour la toolbar
+  canvasLayout->addWidget(canvas);
+  
+  mainLayout->addWidget(canvasContainer);
 
   // 9) Configuration réseau
   WhiteboardServer *server = nullptr;

@@ -5,12 +5,13 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QTimer>
+#include <QRandomGenerator>
 
 CursorTracker::CursorTracker(QObject *parent)
     : QObject(parent), m_cursorTimer(new QTimer(this)),
       m_hasPendingPosition(false) {
   // Générer un ID unique pour cet utilisateur
-  m_localUserId = QString::number(arc4random());
+  m_localUserId = QString::number(QRandomGenerator::global()->generate());
 
   // Timer pour nettoyer les curseurs inactifs
   QTimer *cleanupTimer = new QTimer(this);
