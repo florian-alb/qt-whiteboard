@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QPainter>
 #include <QPoint>
+#include <QTimer>
 #include <QVector>
 
 class CursorTracker : public QObject {
@@ -27,6 +28,7 @@ signals:
 
 public slots:
   void onRemoteCursorUpdate(const QJsonObject &msg);
+  void sendPendingCursorPosition();
 
 private:
   struct UserCursor {
@@ -38,6 +40,10 @@ private:
 
   QMap<QString, UserCursor> m_userCursors;
   QString m_localUserId;
+  QTimer *m_cursorTimer;
+  QPoint m_pendingPosition;
+  bool m_pendingIsDrawing;
+  bool m_hasPendingPosition;
 
   static const int CURSOR_TIMEOUT_MS = 5000; // 5 secondes d'inactivité
 };

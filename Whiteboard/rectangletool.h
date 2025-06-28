@@ -1,12 +1,13 @@
 #pragma once
 #include "tool.h"
 #include <QPoint>
+#include <QRect>
 #include <QVector>
 
-class PencilTool : public Tool {
+class RectangleTool : public Tool {
   Q_OBJECT
 public:
-  explicit PencilTool(const QString &userId, QObject *parent = nullptr);
+  explicit RectangleTool(const QString &userId, QObject *parent = nullptr);
   void onMousePress(const QPoint &pt) override;
   void onMouseMove(const QPoint &pt) override;
   void onMouseRelease(const QPoint &pt) override;
@@ -16,15 +17,16 @@ public:
 
 private:
   QString m_userId;
-  struct Stroke {
+  struct Rectangle {
     QString id;
-    QVector<QPoint> points;
+    QRect rect;
   };
 
-  QVector<Stroke> m_strokes;
-  QVector<QPoint> m_current;
+  QVector<Rectangle> m_rectangles;
+  QPoint m_startPoint;
+  QPoint m_currentPoint;
   bool m_isDrawing = false;
 
   void emitJson(const QString &action, const QPoint &pt);
-  void emitStrokeJson(const QVector<QPoint> &points);
+  void emitRectangleJson(const QRect &rect);
 };

@@ -113,6 +113,30 @@ build CMakeFiles/appWhiteboard.dir/penciltool.cpp.o: CXX_COMPILER__appWhiteboard
   OBJECT_DIR = CMakeFiles/appWhiteboard.dir
   OBJECT_FILE_DIR = CMakeFiles/appWhiteboard.dir
 
+build CMakeFiles/appWhiteboard.dir/rectangletool.cpp.o: CXX_COMPILER__appWhiteboard_unscanned_Debug /Users/flo/Desktop/ynov/desktop/qt-whiteboard/Whiteboard/rectangletool.cpp || cmake_object_order_depends_target_appWhiteboard
+  DEFINES = -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_WIDGETS_LIB
+  DEP_FILE = CMakeFiles/appWhiteboard.dir/rectangletool.cpp.o.d
+  FLAGS = -DQT_QML_DEBUG -DQT_DECLARATIVE_DEBUG -g -std=gnu++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.5.sdk -mmacosx-version-min=12
+  INCLUDES = -I/Users/flo/Desktop/ynov/desktop/qt-whiteboard/build/appWhiteboard_autogen/include -isystem /Users/flo/Qt/6.9.1/macos/lib/QtCore.framework/Headers -iframework /Users/flo/Qt/6.9.1/macos/lib -isystem /Users/flo/Qt/6.9.1/macos/mkspecs/macx-clang -isystem /Users/flo/Qt/6.9.1/macos/include -isystem /Users/flo/Qt/6.9.1/macos/lib/QtNetwork.framework/Headers -isystem /Users/flo/Qt/6.9.1/macos/lib/QtWidgets.framework/Headers -isystem /Users/flo/Qt/6.9.1/macos/lib/QtGui.framework/Headers
+  OBJECT_DIR = CMakeFiles/appWhiteboard.dir
+  OBJECT_FILE_DIR = CMakeFiles/appWhiteboard.dir
+
+build CMakeFiles/appWhiteboard.dir/circletool.cpp.o: CXX_COMPILER__appWhiteboard_unscanned_Debug /Users/flo/Desktop/ynov/desktop/qt-whiteboard/Whiteboard/circletool.cpp || cmake_object_order_depends_target_appWhiteboard
+  DEFINES = -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_WIDGETS_LIB
+  DEP_FILE = CMakeFiles/appWhiteboard.dir/circletool.cpp.o.d
+  FLAGS = -DQT_QML_DEBUG -DQT_DECLARATIVE_DEBUG -g -std=gnu++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.5.sdk -mmacosx-version-min=12
+  INCLUDES = -I/Users/flo/Desktop/ynov/desktop/qt-whiteboard/build/appWhiteboard_autogen/include -isystem /Users/flo/Qt/6.9.1/macos/lib/QtCore.framework/Headers -iframework /Users/flo/Qt/6.9.1/macos/lib -isystem /Users/flo/Qt/6.9.1/macos/mkspecs/macx-clang -isystem /Users/flo/Qt/6.9.1/macos/include -isystem /Users/flo/Qt/6.9.1/macos/lib/QtNetwork.framework/Headers -isystem /Users/flo/Qt/6.9.1/macos/lib/QtWidgets.framework/Headers -isystem /Users/flo/Qt/6.9.1/macos/lib/QtGui.framework/Headers
+  OBJECT_DIR = CMakeFiles/appWhiteboard.dir
+  OBJECT_FILE_DIR = CMakeFiles/appWhiteboard.dir
+
+build CMakeFiles/appWhiteboard.dir/texttool.cpp.o: CXX_COMPILER__appWhiteboard_unscanned_Debug /Users/flo/Desktop/ynov/desktop/qt-whiteboard/Whiteboard/texttool.cpp || cmake_object_order_depends_target_appWhiteboard
+  DEFINES = -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_WIDGETS_LIB
+  DEP_FILE = CMakeFiles/appWhiteboard.dir/texttool.cpp.o.d
+  FLAGS = -DQT_QML_DEBUG -DQT_DECLARATIVE_DEBUG -g -std=gnu++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.5.sdk -mmacosx-version-min=12
+  INCLUDES = -I/Users/flo/Desktop/ynov/desktop/qt-whiteboard/build/appWhiteboard_autogen/include -isystem /Users/flo/Qt/6.9.1/macos/lib/QtCore.framework/Headers -iframework /Users/flo/Qt/6.9.1/macos/lib -isystem /Users/flo/Qt/6.9.1/macos/mkspecs/macx-clang -isystem /Users/flo/Qt/6.9.1/macos/include -isystem /Users/flo/Qt/6.9.1/macos/lib/QtNetwork.framework/Headers -isystem /Users/flo/Qt/6.9.1/macos/lib/QtWidgets.framework/Headers -isystem /Users/flo/Qt/6.9.1/macos/lib/QtGui.framework/Headers
+  OBJECT_DIR = CMakeFiles/appWhiteboard.dir
+  OBJECT_FILE_DIR = CMakeFiles/appWhiteboard.dir
+
 build CMakeFiles/appWhiteboard.dir/cursortracker.cpp.o: CXX_COMPILER__appWhiteboard_unscanned_Debug /Users/flo/Desktop/ynov/desktop/qt-whiteboard/Whiteboard/cursortracker.cpp || cmake_object_order_depends_target_appWhiteboard
   DEFINES = -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_WIDGETS_LIB
   DEP_FILE = CMakeFiles/appWhiteboard.dir/cursortracker.cpp.o.d
@@ -129,7 +153,7 @@ build CMakeFiles/appWhiteboard.dir/cursortracker.cpp.o: CXX_COMPILER__appWhitebo
 #############################################
 # Link the executable appWhiteboard.app/Contents/MacOS/appWhiteboard
 
-build appWhiteboard.app/Contents/MacOS/appWhiteboard: CXX_EXECUTABLE_LINKER__appWhiteboard_Debug CMakeFiles/appWhiteboard.dir/appWhiteboard_autogen/mocs_compilation.cpp.o CMakeFiles/appWhiteboard.dir/main.cpp.o CMakeFiles/appWhiteboard.dir/mygraphicsview.cpp.o CMakeFiles/appWhiteboard.dir/boardwidget.cpp.o CMakeFiles/appWhiteboard.dir/whiteboardserver.cpp.o CMakeFiles/appWhiteboard.dir/whiteboardclient.cpp.o CMakeFiles/appWhiteboard.dir/whiteboardcanvas.cpp.o CMakeFiles/appWhiteboard.dir/penciltool.cpp.o CMakeFiles/appWhiteboard.dir/cursortracker.cpp.o | /Users/flo/Qt/6.9.1/macos/lib/QtNetwork.framework/Versions/A/QtNetwork /Users/flo/Qt/6.9.1/macos/lib/QtWidgets.framework/Versions/A/QtWidgets /Users/flo/Qt/6.9.1/macos/lib/QtGui.framework/Versions/A/QtGui /Users/flo/Qt/6.9.1/macos/lib/QtCore.framework/Versions/A/QtCore || appWhiteboard_autogen appWhiteboard_autogen_timestamp_deps
+build appWhiteboard.app/Contents/MacOS/appWhiteboard: CXX_EXECUTABLE_LINKER__appWhiteboard_Debug CMakeFiles/appWhiteboard.dir/appWhiteboard_autogen/mocs_compilation.cpp.o CMakeFiles/appWhiteboard.dir/main.cpp.o CMakeFiles/appWhiteboard.dir/mygraphicsview.cpp.o CMakeFiles/appWhiteboard.dir/boardwidget.cpp.o CMakeFiles/appWhiteboard.dir/whiteboardserver.cpp.o CMakeFiles/appWhiteboard.dir/whiteboardclient.cpp.o CMakeFiles/appWhiteboard.dir/whiteboardcanvas.cpp.o CMakeFiles/appWhiteboard.dir/penciltool.cpp.o CMakeFiles/appWhiteboard.dir/rectangletool.cpp.o CMakeFiles/appWhiteboard.dir/circletool.cpp.o CMakeFiles/appWhiteboard.dir/texttool.cpp.o CMakeFiles/appWhiteboard.dir/cursortracker.cpp.o | /Users/flo/Qt/6.9.1/macos/lib/QtNetwork.framework/Versions/A/QtNetwork /Users/flo/Qt/6.9.1/macos/lib/QtWidgets.framework/Versions/A/QtWidgets /Users/flo/Qt/6.9.1/macos/lib/QtGui.framework/Versions/A/QtGui /Users/flo/Qt/6.9.1/macos/lib/QtCore.framework/Versions/A/QtCore || appWhiteboard_autogen appWhiteboard_autogen_timestamp_deps
   FLAGS = -DQT_QML_DEBUG -DQT_DECLARATIVE_DEBUG -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.5.sdk -mmacosx-version-min=12
   LINK_LIBRARIES = -Wl,-rpath,/Users/flo/Qt/6.9.1/macos/lib  /Users/flo/Qt/6.9.1/macos/lib/QtNetwork.framework/Versions/A/QtNetwork  /Users/flo/Qt/6.9.1/macos/lib/QtWidgets.framework/Versions/A/QtWidgets  /Users/flo/Qt/6.9.1/macos/lib/QtGui.framework/Versions/A/QtGui  -framework AGL  -framework AppKit  -framework OpenGL  -framework ImageIO  -framework Metal  /Users/flo/Qt/6.9.1/macos/lib/QtCore.framework/Versions/A/QtCore  -framework IOKit  -framework DiskArbitration  -framework UniformTypeIdentifiers
   LINK_PATH = -F/Users/flo/Qt/6.9.1/macos/lib

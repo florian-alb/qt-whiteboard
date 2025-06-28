@@ -19,6 +19,9 @@ qt_add_executable(appWhiteboard
     whiteboardclient.h whiteboardclient.cpp
     whiteboardcanvas.h whiteboardcanvas.cpp
     penciltool.h penciltool.cpp
+    rectangletool.h rectangletool.cpp
+    circletool.h circletool.cpp
+    texttool.h texttool.cpp
     cursortracker.h cursortracker.cpp
     tool.h
 )
