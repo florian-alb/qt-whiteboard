@@ -9,13 +9,66 @@ find_package(Qt6 6.9 REQUIRED COMPONENTS Core Network Widgets)
 
 qt_standard_project_setup(REQUIRES 6.8)
 
-qt_add_executable(appWhiteboard
+# Source files
+set(SOURCES
     main.cpp
-    CollaborationClient.h
-    CollaborationClient.cpp
-    mygraphicsview.h mygraphicsview.cpp
-    boardwidget.h boardwidget.cpp
-    collaborationserver.h collaborationserver.cpp
+    whiteboardapp.cpp
+    
+    # Data layer
+    data/whiteboardelement.cpp
+    data/textitem.cpp
+    data/user.cpp
+    data/session.cpp
+    data/whiteboardmodel.cpp
+    
+    # Business layer
+    business/whiteboardcontroller.cpp
+    business/sessioncontroller.cpp
+    business/syncmanager.cpp
+    
+    # Networking
+    networking/networkservice.cpp
+    
+    # Presentation layer
+    presentation/mainwindow.cpp
+    presentation/canvasview.cpp
+    presentation/toolbar.cpp
+    presentation/stylepanel.cpp
+    presentation/sessiondialog.cpp
+    presentation/userlistpanel.cpp
+)
+
+# Header files
+set(HEADERS
+    whiteboardapp.h
+    
+    # Data layer
+    data/whiteboardelement.h
+    data/textitem.h
+    data/user.h
+    data/session.h
+    data/whiteboardmodel.h
+    
+    # Business layer
+    business/whiteboardcontroller.h
+    business/sessioncontroller.h
+    business/syncmanager.h
+    
+    # Networking
+    networking/networkservice.h
+    
+    # Presentation layer
+    presentation/mainwindow.h
+    presentation/canvasview.h
+    presentation/toolbar.h
+    presentation/stylepanel.h
+    presentation/sessiondialog.h
+    presentation/userlistpanel.h
+)
+
+qt_add_executable(appWhiteboard
+    ${SOURCES}
+    ${HEADERS}
 )
 
 set_target_properties(appWhiteboard PROPERTIES
