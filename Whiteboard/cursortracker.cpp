@@ -6,7 +6,9 @@
 #include <QJsonObject>
 #include <QTimer>
 
-CursorTracker::CursorTracker(QObject *parent) : QObject(parent) {
+CursorTracker::CursorTracker(QObject *parent)
+    : QObject(parent), m_cursorTimer(new QTimer(this)),
+      m_hasPendingPosition(false) {
   // Générer un ID unique pour cet utilisateur
   m_localUserId = QString::number(arc4random());
 
@@ -15,22 +17,47 @@ CursorTracker::CursorTracker(QObject *parent) : QObject(parent) {
   connect(cleanupTimer, &QTimer::timeout, this,
           &CursorTracker::cleanupInactiveCursors);
   cleanupTimer->start(1000); // Vérifier toutes les secondes
+
+  // Timer pour limiter l'envoi des positions du curseur
+  connect(m_cursorTimer, &QTimer::timeout, this,
+          &CursorTracker::sendPendingCursorPosition);
+  m_cursorTimer->setInterval(100);
 }
 
 void CursorTracker::sendMousePosition(const QPoint &position, bool isDrawing) {
+  // Stocker la position en attente
+  m_pendingPosition = position;
+  m_pendingIsDrawing = isDrawing;
+  m_hasPendingPosition = true;
+
+  // Démarrer le timer s'il n'est pas déjà actif
+  if (!m_cursorTimer->isActive()) {
+    m_cursorTimer->start();
+  }
+}
+
+void CursorTracker::sendPendingCursorPosition() {
+  if (!m_hasPendingPosition) {
+    return;
+  }
+
   QJsonObject msg;
   msg["id"] = m_localUserId;
   msg["type"] = "cursor_update";
 
   QJsonObject props;
   QJsonArray coords;
-  coords.append(position.x());
-  coords.append(position.y());
+  coords.append(m_pendingPosition.x());
+  coords.append(m_pendingPosition.y());
   props["position"] = coords;
-  props["isDrawing"] = isDrawing;
+  props["isDrawing"] = m_pendingIsDrawing;
   msg["props"] = props;
 
   emit sendJson(msg);
+
+  // Réinitialiser l'état en attente
+  m_hasPendingPosition = false;
+  m_cursorTimer->stop();
 }
 
 void CursorTracker::sendMousePress(const QPoint &position) {

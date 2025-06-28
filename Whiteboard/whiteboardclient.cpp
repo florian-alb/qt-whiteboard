@@ -20,6 +20,9 @@ void WhiteboardClient::onConnected() {
   qDebug() << __FUNCTION__ << __LINE__;
   qDebug() << "Connecté au serveur";
   emit connected();
+
+  // Demander l'historique après la connexion
+  requestHistory();
 }
 
 void WhiteboardClient::onDisconnectedSlot() {
@@ -29,16 +32,32 @@ void WhiteboardClient::onDisconnectedSlot() {
 }
 
 void WhiteboardClient::sendMessage(const QJsonObject &msg) {
-  qDebug() << __FUNCTION__ << __LINE__;
+
+  if (msg.contains("type") && msg["type"].toString() == "object") {
+    qDebug() << "Envoi du message au serveur depuis le client:" << msg;
+  }
+
   QJsonDocument doc(msg);
   QByteArray json = doc.toJson(QJsonDocument::Compact) + "\n";
   m_socket->write(json);
 }
 
+void WhiteboardClient::requestHistory() {
+  qDebug() << "Demande d'historique au serveur";
+  QJsonObject request;
+  request["type"] = "request_history";
+  sendMessage(request);
+}
+
 void WhiteboardClient::onReadyRead() {
-  qDebug() << __FUNCTION__ << __LINE__;
+
   m_buffer += m_socket->readAll();
-  // On découpe sur '\n'
+  QJsonDocument doc = QJsonDocument::fromJson(m_buffer);
+  qDebug() << "Doc reçu:" << doc;
+  if (doc.isObject()) {
+    emit messageReceived(doc.object());
+  }
+
   while (true) {
     int idx = m_buffer.indexOf('\n');
     if (idx < 0)
@@ -46,6 +65,8 @@ void WhiteboardClient::onReadyRead() {
     QByteArray line = m_buffer.left(idx);
     m_buffer.remove(0, idx + 1);
     QJsonDocument doc = QJsonDocument::fromJson(line);
+
+    qDebug() << "Doc reçu:" << doc;
     if (doc.isObject()) {
       emit messageReceived(doc.object());
     }

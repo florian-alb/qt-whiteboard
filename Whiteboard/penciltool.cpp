@@ -21,8 +21,12 @@ void PencilTool::emitJson(const QString &action, const QPoint &pt) {
 }
 
 void PencilTool::emitStrokeJson(const QVector<QPoint> &points) {
+  if (points.isEmpty())
+    return;
+
   QJsonObject msg;
   msg["id"] = m_userId;
+  msg["type"] = "object";
   QJsonObject props;
   props["action"] = "draw_stroke";
 
@@ -35,6 +39,7 @@ void PencilTool::emitStrokeJson(const QVector<QPoint> &points) {
   }
   props["points"] = pointsArray;
   msg["props"] = props;
+
   emit sendJson(msg);
 }
 
@@ -70,26 +75,42 @@ void PencilTool::draw(QPainter &p) {
   p.setPen(Qt::black);
   // traits validés
   for (auto &s : m_strokes) {
-    for (int i = 1; i < s.points.size(); ++i)
-      p.drawLine(s.points[i - 1], s.points[i]);
+    if (s.points.size() > 1) {
+      for (int i = 1; i < s.points.size(); ++i) {
+        p.drawLine(s.points[i - 1], s.points[i]);
+      }
+    }
   }
   // trait en cours seulement si on dessine
   if (m_isDrawing && m_current.size() > 1) {
-    for (int i = 1; i < m_current.size(); ++i)
+    for (int i = 1; i < m_current.size(); ++i) {
       p.drawLine(m_current[i - 1], m_current[i]);
+    }
   }
 }
 
 void PencilTool::onRemoteJson(const QJsonObject &msg) {
+  if (!msg.contains("props"))
+    return;
+
   auto props = msg["props"].toObject();
+  if (!props.contains("action"))
+    return;
+
   QString action = props["action"].toString();
 
   if (action == "draw_stroke") {
     // Nouveau format : réception d'un trait complet
+    if (!props.contains("points"))
+      return;
+
     QJsonArray pointsArray = props["points"].toArray();
     QVector<QPoint> points;
 
     for (const QJsonValue &pointValue : pointsArray) {
+      if (!pointValue.isArray())
+        continue;
+
       QJsonArray coords = pointValue.toArray();
       if (coords.size() >= 2) {
         points.append(QPoint(coords[0].toInt(), coords[1].toInt()));
@@ -97,18 +118,36 @@ void PencilTool::onRemoteJson(const QJsonObject &msg) {
     }
 
     if (!points.isEmpty()) {
-      m_strokes.append({msg["id"].toString(), points});
+      QString userId = msg["id"].toString();
+      if (!userId.isEmpty()) {
+        m_strokes.append({userId, points});
+      }
     }
   } else {
     // Ancien format pour compatibilité (si nécessaire)
+    if (!props.contains("coordinates"))
+      return;
+
     QJsonArray arr = props["coordinates"].toArray();
+    if (arr.size() < 2)
+      return;
+
     QPoint pt(arr[0].toInt(), arr[1].toInt());
+    QString userId = msg["id"].toString();
 
     // find or create stroke for this user
     if (action == "draw_start") {
-      m_strokes.append({msg["id"].toString(), {pt}});
+      if (!userId.isEmpty()) {
+        m_strokes.append({userId, {pt}});
+      }
     } else if (!m_strokes.isEmpty()) {
       m_strokes.last().points.append(pt);
     }
   }
+}
+
+void PencilTool::clear() {
+  m_strokes.clear();
+  m_current.clear();
+  m_isDrawing = false;
 }

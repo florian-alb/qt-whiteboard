@@ -3,10 +3,10 @@
 #include <QPoint>
 #include <QVector>
 
-class PencilTool : public Tool {
+class CircleTool : public Tool {
   Q_OBJECT
 public:
-  explicit PencilTool(const QString &userId, QObject *parent = nullptr);
+  explicit CircleTool(const QString &userId, QObject *parent = nullptr);
   void onMousePress(const QPoint &pt) override;
   void onMouseMove(const QPoint &pt) override;
   void onMouseRelease(const QPoint &pt) override;
@@ -16,15 +16,17 @@ public:
 
 private:
   QString m_userId;
-  struct Stroke {
+  struct Circle {
     QString id;
-    QVector<QPoint> points;
+    QPoint center;
+    int radius;
   };
 
-  QVector<Stroke> m_strokes;
-  QVector<QPoint> m_current;
+  QVector<Circle> m_circles;
+  QPoint m_startPoint;
+  QPoint m_currentPoint;
   bool m_isDrawing = false;
 
   void emitJson(const QString &action, const QPoint &pt);
-  void emitStrokeJson(const QVector<QPoint> &points);
+  void emitCircleJson(const QPoint &center, int radius);
 };

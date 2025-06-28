@@ -385,6 +385,12 @@
 			null
 		],
 		[
+			"/Users/flo/Desktop/ynov/desktop/qt-whiteboard/Whiteboard/circletool.h",
+			"MU",
+			"EWIEGA46WW/moc_circletool.cpp",
+			null
+		],
+		[
 			"/Users/flo/Desktop/ynov/desktop/qt-whiteboard/Whiteboard/cursortracker.h",
 			"MU",
 			"EWIEGA46WW/moc_cursortracker.cpp",
@@ -400,6 +406,18 @@
 			"/Users/flo/Desktop/ynov/desktop/qt-whiteboard/Whiteboard/penciltool.h",
 			"MU",
 			"EWIEGA46WW/moc_penciltool.cpp",
+			null
+		],
+		[
+			"/Users/flo/Desktop/ynov/desktop/qt-whiteboard/Whiteboard/rectangletool.h",
+			"MU",
+			"EWIEGA46WW/moc_rectangletool.cpp",
+			null
+		],
+		[
+			"/Users/flo/Desktop/ynov/desktop/qt-whiteboard/Whiteboard/texttool.h",
+			"MU",
+			"EWIEGA46WW/moc_texttool.cpp",
 			null
 		],
 		[
@@ -494,6 +512,11 @@
 			null
 		],
 		[
+			"/Users/flo/Desktop/ynov/desktop/qt-whiteboard/Whiteboard/circletool.cpp",
+			"MU",
+			null
+		],
+		[
 			"/Users/flo/Desktop/ynov/desktop/qt-whiteboard/Whiteboard/cursortracker.cpp",
 			"MU",
 			null
@@ -510,6 +533,16 @@
 		],
 		[
 			"/Users/flo/Desktop/ynov/desktop/qt-whiteboard/Whiteboard/penciltool.cpp",
+			"MU",
+			null
+		],
+		[
+			"/Users/flo/Desktop/ynov/desktop/qt-whiteboard/Whiteboard/rectangletool.cpp",
+			"MU",
+			null
+		],
+		[
+			"/Users/flo/Desktop/ynov/desktop/qt-whiteboard/Whiteboard/texttool.cpp",
 			"MU",
 			null
 		],

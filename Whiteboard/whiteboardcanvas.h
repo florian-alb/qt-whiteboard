@@ -1,14 +1,24 @@
 #pragma once
 #include "cursortracker.h"
 #include "tool.h"
+#include <QJsonArray>
 #include <QPixmap>
+#include <QVector>
 #include <QWidget>
 
 class WhiteboardCanvas : public QWidget {
   Q_OBJECT
 public:
   explicit WhiteboardCanvas(QWidget *parent = nullptr);
-  void setTool(Tool *tool);
+  void addTool(Tool *tool);
+  void setActiveTool(Tool *tool);
+  Tool *getActiveTool() const { return m_activeTool; }
+
+  // Méthodes pour sauvegarder/charger les dessins
+  void saveDrawingsToFile(const QString &filename);
+  void loadDrawingsFromFile(const QString &filename);
+  void clearAllDrawings();
+
 signals:
   void sendJson(const QJsonObject &msg);
 public slots:
@@ -22,6 +32,8 @@ protected:
 
 private:
   QPixmap m_pixmap;
-  Tool *m_tool = nullptr;
+  QVector<Tool *> m_tools;
+  Tool *m_activeTool = nullptr;
   CursorTracker *m_cursorTracker = nullptr;
+  QJsonArray m_drawingLog;
 };

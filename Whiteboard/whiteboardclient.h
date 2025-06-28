@@ -9,6 +9,7 @@ public:
   explicit WhiteboardClient(const QHostAddress &host, quint16 port,
                             QObject *parent = nullptr);
   void sendMessage(const QJsonObject &msg);
+  void requestHistory();
 
 signals:
   void messageReceived(const QJsonObject &msg);
