@@ -4,9 +4,16 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QPainter>
+#include <QGraphicsItem>
+#include <QGraphicsScene>
+#include "penciltool.h"
+#include "whiteboardcanvas.h"
 
 EraserTool::EraserTool(const QString &userId, QObject *parent)
-    : Tool(parent), m_userId(userId) {}
+    : Tool(parent), m_userId(userId) {
+  // Initialize with default eraser size
+  m_eraserSize = 30;
+}
 
 // Static method to check if a message is from an eraser tool
 bool EraserTool::isEraserMessage(const QJsonObject &msg) {
@@ -72,17 +79,22 @@ void EraserTool::onMousePress(const QPoint &pt) {
   m_current.clear();
   m_current.append(pt);
   m_isErasing = true;
-  Stroke stroke;
-  stroke.id = m_userId + QString::number(QDateTime::currentMSecsSinceEpoch());
-  stroke.points.append(pt);
-  m_strokes.append(stroke);
   
+  // Find and remove strokes at this point
+  eraseAtPoint(pt);
+  
+  // Notify other clients about the erasure
   emitJson("erase_start", pt);
 }
 
 void EraserTool::onMouseMove(const QPoint &pt) {
   if (m_isErasing) {
     m_current.append(pt);
+    
+    // Find and remove strokes at this point
+    eraseAtPoint(pt);
+    
+    // Notify other clients about the erasure
     emitJson("erase_move", pt);
   }
 }
@@ -90,39 +102,26 @@ void EraserTool::onMouseMove(const QPoint &pt) {
 void EraserTool::onMouseRelease(const QPoint &pt) {
   if (m_isErasing) {
     m_current.append(pt);
-    m_isErasing = false;
-
-    // We already created the stroke in onMousePress, just update the last stroke with current points
-    if (!m_strokes.isEmpty()) {
-      // Add all points from current to the last stroke
-      for (int i = 1; i < m_current.size(); i++) { // Start from 1 to avoid duplicating the first point
-        m_strokes.last().points.append(m_current[i]);
-      }
-    }
-
-    // Send the complete stroke to other clients
+    
+    // Find and remove strokes at this point
+    eraseAtPoint(pt);
+    
+    // Send the complete erase path to other clients
     emitStrokeJson(m_current);
+    
+    m_isErasing = false;
     m_current.clear();
   }
 }
 
 void EraserTool::draw(QPainter &p) {
-  // Set up the eraser with white color and larger width
-  QPen eraserPen(Qt::white, m_eraserSize, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
-  p.setPen(eraserPen);
-  
-  // Draw all completed strokes
-  for (const Stroke &stroke : m_strokes) {
-    for (int i = 0; i < stroke.points.size() - 1; ++i) {
-      p.drawLine(stroke.points.at(i), stroke.points.at(i + 1));
-    }
-  }
-  
-  // Draw the current stroke if we're erasing
-  if (m_isErasing && m_current.size() > 1) {
-    for (int i = 0; i < m_current.size() - 1; ++i) {
-      p.drawLine(m_current.at(i), m_current.at(i + 1));
-    }
+  // Only draw the current eraser position if we're actively erasing
+  if (m_isErasing && !m_current.isEmpty()) {
+    // Draw a circle to represent the eraser cursor
+    p.setPen(QPen(Qt::gray, 1, Qt::DashLine));
+    p.setBrush(Qt::NoBrush);
+    QPoint lastPoint = m_current.last();
+    p.drawEllipse(lastPoint, m_eraserSize/2, m_eraserSize/2);
   }
 }
 
@@ -146,35 +145,92 @@ void EraserTool::onRemoteJson(const QJsonObject &msg) {
     return; // Skip messages not meant for the eraser
   }
   
-  if (action == "erase_start") {
+  if (action == "erase_start" || action == "erase_move") {
     QJsonArray coords = props["coordinates"].toArray();
     QPoint pt(coords[0].toInt(), coords[1].toInt());
-    Stroke stroke;
-    stroke.id = msg["id"].toString() + QString::number(QDateTime::currentMSecsSinceEpoch());
-    stroke.points.append(pt);
-    m_strokes.append(stroke);
-  } else if (action == "erase_move") {
-    QJsonArray coords = props["coordinates"].toArray();
-    QPoint pt(coords[0].toInt(), coords[1].toInt());
-    if (!m_strokes.isEmpty()) {
-      m_strokes.last().points.append(pt);
-    }
+    
+    // Process remote erasure at this point
+    processRemoteErase(pt);
   } else if (action == "erase_stroke") {
     QJsonArray pointsArray = props["points"].toArray();
-    QVector<QPoint> points;
+    
+    // Process each point in the stroke for erasure
     for (const QJsonValue &coordValue : pointsArray) {
       QJsonArray coords = coordValue.toArray();
-      points.append(QPoint(coords[0].toInt(), coords[1].toInt()));
+      QPoint pt(coords[0].toInt(), coords[1].toInt());
+      processRemoteErase(pt);
     }
-    Stroke stroke;
-    stroke.id = msg["id"].toString() + QString::number(QDateTime::currentMSecsSinceEpoch());
-    stroke.points = points;
-    m_strokes.append(stroke);
   }
 }
 
 void EraserTool::clear() {
-  m_strokes.clear();
   m_current.clear();
   m_isErasing = false;
+  m_erasedStrokes.clear();
+}
+
+void EraserTool::eraseAtPoint(const QPoint &pt) {
+  qDebug() << "EraserTool: Erasing at point" << pt;
+  
+  // Use the direct canvas reference if available
+  if (m_canvas) {
+    qDebug() << "EraserTool: Using direct canvas reference";
+    
+    // Get all tools from the canvas
+    const QVector<Tool*>& allTools = m_canvas->getAllTools();
+    qDebug() << "EraserTool: Number of tools:" << allTools.size();
+    
+    // For each tool, check if there's a stroke near this point and remove it
+    for (Tool* tool : allTools) {
+      // Skip ourselves
+      if (tool == this) {
+        qDebug() << "EraserTool: Skipping eraser tool";
+        continue;
+      }
+      
+      qDebug() << "EraserTool: Checking tool" << tool->metaObject()->className();
+      
+      // Special handling for PencilTool
+      PencilTool* pencilTool = qobject_cast<PencilTool*>(tool);
+      if (pencilTool) {
+        qDebug() << "EraserTool: Found PencilTool, erasing near" << pt << "with radius" << m_eraserSize/2;
+        pencilTool->eraseNear(pt, m_eraserSize/2);
+      } else {
+        qDebug() << "EraserTool: Tool is not a PencilTool";
+      }
+    }
+  } else {
+    // Fallback to the previous approach if direct reference is not set
+    qDebug() << "EraserTool: No direct canvas reference, trying to find canvas";
+    
+    // Try to get the canvas through parent hierarchy
+    WhiteboardCanvas* canvas = qobject_cast<WhiteboardCanvas*>(parent());
+    if (!canvas) {
+      QObject* parentObj = parent();
+      while (parentObj && !canvas) {
+        canvas = qobject_cast<WhiteboardCanvas*>(parentObj);
+        parentObj = parentObj->parent();
+      }
+    }
+    
+    if (canvas) {
+      // Store the canvas for future use
+      m_canvas = canvas;
+      qDebug() << "EraserTool: Found and stored canvas reference";
+      
+      // Now use the canvas to erase
+      eraseAtPoint(pt); // Call again with the canvas set
+      return;
+    } else {
+      qDebug() << "EraserTool: Could not find canvas";
+    }
+  }
+  
+  // Record this erasure for tracking
+  m_erasedStrokes.append(pt);
+}
+
+void EraserTool::processRemoteErase(const QPoint &pt) {
+  // Similar to eraseAtPoint but for remote erasures
+  eraseAtPoint(pt); // We can reuse the same logic
 }

@@ -13,6 +13,7 @@ public:
   void addTool(Tool *tool);
   void setActiveTool(Tool *tool);
   Tool *getActiveTool() const { return m_activeTool; }
+  const QVector<Tool*>& getAllTools() const { return m_tools; }
 
   // Méthodes pour sauvegarder/charger les dessins
   void saveDrawingsToFile(const QString &filename);
