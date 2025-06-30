@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
 
   // Création de la sidebar gauche pour les outils
   QWidget *sidebar = new QWidget;
-  sidebar->setFixedWidth(250);
+  sidebar->setFixedWidth(150);
   sidebar->setStyleSheet(
     "background-color: #252526; "
     "border-right: 1px solid #333333;");
@@ -128,68 +128,7 @@ int main(int argc, char *argv[]) {
   styleLayout->setSpacing(10);
   styleLayout->setContentsMargins(5, 25, 5, 5);
   
-  // Options de style de texte
-  QLabel *fontLabel = new QLabel("Font:");
-  fontLabel->setStyleSheet("color: #ffffff;");
-  QComboBox *fontComboBox = new QComboBox();
-  fontComboBox->addItem("Arial");
-  fontComboBox->addItem("Times New Roman");
-  fontComboBox->addItem("Courier New");
-  fontComboBox->setStyleSheet(
-    "QComboBox { "
-    "  background-color: #333333; "
-    "  color: #ffffff; "
-    "  border: 1px solid #555555; "
-    "  padding: 5px; "
-    "  border-radius: 3px; "
-    "}"
-    "QComboBox::drop-down { "
-    "  subcontrol-origin: padding; "
-    "  subcontrol-position: top right; "
-    "  width: 15px; "
-    "  border-left: 1px solid #555555; "
-    "}");
-  
-  QLabel *sizeLabel = new QLabel("Size:");
-  sizeLabel->setStyleSheet("color: #ffffff;");
-  QComboBox *sizeComboBox = new QComboBox();
-  sizeComboBox->addItem("12");
-  sizeComboBox->addItem("14");
-  sizeComboBox->addItem("16");
-  sizeComboBox->addItem("18");
-  sizeComboBox->addItem("24");
-  sizeComboBox->setStyleSheet(
-    "QComboBox { "
-    "  background-color: #333333; "
-    "  color: #ffffff; "
-    "  border: 1px solid #555555; "
-    "  padding: 5px; "
-    "  border-radius: 3px; "
-    "}"
-    "QComboBox::drop-down { "
-    "  subcontrol-origin: padding; "
-    "  subcontrol-position: top right; "
-    "  width: 15px; "
-    "  border-left: 1px solid #555555; "
-    "}");
-  
-  QHBoxLayout *textStyleLayout = new QHBoxLayout();
-  QCheckBox *boldCheckBox = new QCheckBox("Bold");
-  boldCheckBox->setStyleSheet("color: #ffffff;");
-  QCheckBox *italicCheckBox = new QCheckBox("Italic");
-  italicCheckBox->setStyleSheet("color: #ffffff;");
-  textStyleLayout->addWidget(boldCheckBox);
-  textStyleLayout->addWidget(italicCheckBox);
-  
-  QLabel *colorLabel = new QLabel("Color:");
-  colorLabel->setStyleSheet("color: #ffffff;");
-  QPushButton *colorButton = new QPushButton();
-  colorButton->setFixedSize(30, 30);
-  colorButton->setStyleSheet(
-    "background-color: #000000; "
-    "border: 1px solid #555555; "
-    "border-radius: 3px;");
-  
+
   // Groupe pour les utilisateurs connectés
   QGroupBox *usersGroup = new QGroupBox("Users");
   usersGroup->setStyleSheet(
@@ -305,22 +244,10 @@ int main(int argc, char *argv[]) {
   toolsLayout->addWidget(saveButton);
   toolsLayout->addWidget(loadButton);
 
-  // Ajout des éléments de style au layout de style
-  styleLayout->addWidget(fontLabel);
-  styleLayout->addWidget(fontComboBox);
-  styleLayout->addWidget(sizeLabel);
-  styleLayout->addWidget(sizeComboBox);
-  styleLayout->addLayout(textStyleLayout);
-  styleLayout->addWidget(colorLabel);
   
-  QHBoxLayout *colorLayout = new QHBoxLayout();
-  colorLayout->addWidget(colorButton);
-  colorLayout->addStretch();
-  styleLayout->addLayout(colorLayout);
 
   // Ajout des groupes au layout de la sidebar
   sidebarLayout->addWidget(toolsGroup);
-  sidebarLayout->addWidget(styleGroup);
   sidebarLayout->addStretch();
 
   // 5) Création du canvas et de la zone principale
@@ -328,6 +255,8 @@ int main(int argc, char *argv[]) {
   QVBoxLayout *mainAreaLayout = new QVBoxLayout(mainArea);
   mainAreaLayout->setContentsMargins(0, 0, 0, 0);
   mainAreaLayout->setSpacing(0);
+  
+
 
   // 6) Création des outils et du canvas
   QString userId = QString::number(QRandomGenerator::global()->generate());
@@ -350,6 +279,10 @@ int main(int argc, char *argv[]) {
   // Ajout de la sidebar et de la zone principale au layout principal
   mainLayout->addWidget(sidebar);
   mainLayout->addWidget(mainArea);
+  
+  // Donner plus d'espace à la zone principale
+  mainLayout->setStretchFactor(sidebar, 0);
+  mainLayout->setStretchFactor(mainArea, 10);
 
   // Ajouter les cinq outils au canvas
   canvas->addTool(pencilTool);

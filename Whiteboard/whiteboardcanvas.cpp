@@ -196,6 +196,21 @@ void WhiteboardCanvas::applyRemote(const QJsonObject &msg) {
   update();
 }
 
+void WhiteboardCanvas::resizeEvent(QResizeEvent *event) {
+  // Create a new pixmap with the new size
+  QPixmap newPixmap(size());
+  newPixmap.fill(Qt::white);
+  
+  // Copy the old pixmap content to the new one
+  QPainter painter(&newPixmap);
+  painter.drawPixmap(0, 0, m_pixmap);
+  
+  // Replace the old pixmap with the new one
+  m_pixmap = newPixmap;
+  
+  QWidget::resizeEvent(event);
+}
+
 void WhiteboardCanvas::paintEvent(QPaintEvent *) {
   QPainter p(this);
   p.drawPixmap(0, 0, m_pixmap);
