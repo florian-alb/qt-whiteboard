@@ -1,4 +1,5 @@
 #include "whiteboardcanvas.h"
+#include "erasertool.h"
 #include <QDebug>
 #include <QFile>
 #include <QJsonDocument>
@@ -30,6 +31,13 @@ void WhiteboardCanvas::addTool(Tool *tool) {
     // Si c'est le premier outil, le définir comme actif
     if (!m_activeTool) {
       m_activeTool = tool;
+    }
+    
+    // If this is an EraserTool, set the canvas reference
+    EraserTool* eraserTool = qobject_cast<EraserTool*>(tool);
+    if (eraserTool) {
+      qDebug() << "WhiteboardCanvas: Setting canvas reference in EraserTool";
+      eraserTool->setCanvas(this);
     }
   }
 }
