@@ -142,3 +142,26 @@ void CircleTool::clear() {
   m_circles.clear();
   m_isDrawing = false;
 }
+
+void CircleTool::eraseNear(const QPoint &pt, int radius) {
+  // Calculate the squared radius for more efficient distance comparison
+  int radiusSquared = radius * radius;
+  
+  // Use removeIf with a lambda to remove circles that intersect with the eraser
+  auto it = m_circles.begin();
+  while (it != m_circles.end()) {
+    const Circle &circle = *it;
+    
+    // Calculate distance between eraser center and circle center
+    int dx = circle.center.x() - pt.x();
+    int dy = circle.center.y() - pt.y();
+    int distanceSquared = dx * dx + dy * dy;
+    
+    // If the distance between centers is less than sum of radii, they intersect
+    if (distanceSquared <= (radiusSquared + circle.radius * circle.radius)) {
+      it = m_circles.erase(it);
+    } else {
+      ++it;
+    }
+  }
+}
