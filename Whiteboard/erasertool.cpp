@@ -133,28 +133,24 @@ void EraserTool::onRemoteJson(const QJsonObject &msg) {
     return;
   }
   
-  // Only process messages specifically for the eraser tool
   QString action = props["action"].toString();
   QString toolType = props["tool"].toString();
   
-  // Check if this message is specifically for the eraser tool
-  if (toolType != "eraser" && 
-      action != "erase_start" && 
-      action != "erase_move" && 
-      action != "erase_stroke") {
-    return; // Skip messages not meant for the eraser
+  if (toolType != "eraser" || 
+      (action != "erase_start" && 
+       action != "erase_move" && 
+       action != "erase_stroke")) {
+    return;
   }
   
   if (action == "erase_start" || action == "erase_move") {
     QJsonArray coords = props["coordinates"].toArray();
     QPoint pt(coords[0].toInt(), coords[1].toInt());
     
-    // Process remote erasure at this point
     processRemoteErase(pt);
   } else if (action == "erase_stroke") {
     QJsonArray pointsArray = props["points"].toArray();
     
-    // Process each point in the stroke for erasure
     for (const QJsonValue &coordValue : pointsArray) {
       QJsonArray coords = coordValue.toArray();
       QPoint pt(coords[0].toInt(), coords[1].toInt());
@@ -172,17 +168,13 @@ void EraserTool::clear() {
 void EraserTool::eraseAtPoint(const QPoint &pt) {
   qDebug() << "EraserTool: Erasing at point" << pt;
   
-  // Use the direct canvas reference if available
   if (m_canvas) {
     qDebug() << "EraserTool: Using direct canvas reference";
     
-    // Get all tools from the canvas
     const QVector<Tool*>& allTools = m_canvas->getAllTools();
     qDebug() << "EraserTool: Number of tools:" << allTools.size();
     
-    // For each tool, check if there's a stroke near this point and remove it
     for (Tool* tool : allTools) {
-      // Skip ourselves
       if (tool == this) {
         qDebug() << "EraserTool: Skipping eraser tool";
         continue;
@@ -190,14 +182,9 @@ void EraserTool::eraseAtPoint(const QPoint &pt) {
       
       qDebug() << "EraserTool: Checking tool" << tool->metaObject()->className();
       
-      // Special handling for PencilTool
-      PencilTool* pencilTool = qobject_cast<PencilTool*>(tool);
-      if (pencilTool) {
-        qDebug() << "EraserTool: Found PencilTool, erasing near" << pt << "with radius" << m_eraserSize/2;
-        pencilTool->eraseNear(pt, m_eraserSize/2);
-      } else {
-        qDebug() << "EraserTool: Tool is not a PencilTool";
-      }
+      // Call eraseNear on all tools, not just PencilTool
+      tool->eraseNear(pt, m_eraserSize/2);
+      qDebug() << "EraserTool: Called eraseNear on tool" << tool->metaObject()->className();
     }
   } else {
     // Fallback to the previous approach if direct reference is not set

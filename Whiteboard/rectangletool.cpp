@@ -153,3 +153,29 @@ void RectangleTool::clear() {
   m_rectangles.clear();
   m_isDrawing = false;
 }
+
+void RectangleTool::eraseNear(const QPoint &pt, int radius) {
+  // Create a list of rectangles that should be kept (not erased)
+  QVector<Rectangle> remainingRectangles;
+  
+  for (const Rectangle &rect : m_rectangles) {
+    bool shouldErase = false;
+    
+    // Check if the eraser point is inside or near the rectangle
+    QRect expandedRect = rect.rect.adjusted(-radius, -radius, radius, radius);
+    if (expandedRect.contains(pt)) {
+      // The eraser is near or inside the rectangle
+      shouldErase = true;
+    }
+    
+    // If we shouldn't erase this rectangle, keep it
+    if (!shouldErase) {
+      remainingRectangles.append(rect);
+    }
+  }
+  
+  // Replace the rectangles list with only the remaining ones
+  if (m_rectangles.size() != remainingRectangles.size()) {
+    m_rectangles = remainingRectangles;
+  }
+}

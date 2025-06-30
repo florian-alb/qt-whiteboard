@@ -14,6 +14,10 @@ public:
   virtual void draw(QPainter &p) = 0;
   virtual void onRemoteJson(const QJsonObject &msg) = 0;
   virtual void clear() = 0;
+  
+  // Method to erase elements near a point with a given radius
+  virtual void eraseNear(const QPoint &pt, int radius) {}
+  
 signals:
   void sendJson(const QJsonObject &msg);
 };

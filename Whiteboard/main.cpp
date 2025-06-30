@@ -279,8 +279,10 @@ int main(int argc, char *argv[]) {
 
     if (!filename.isEmpty()) {
       canvas->loadDrawingsFromFile(filename);
-      QMessageBox::information(mainWindow, "Chargement",
-                               "Dessins chargés avec succès !");
+      QMessageBox messageBox;
+      messageBox.setStyleSheet("color: black;");
+      messageBox.information(mainWindow, "Chargement",
+                             "Dessins chargés avec succès !");
     }
   });
 
