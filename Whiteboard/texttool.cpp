@@ -150,3 +150,27 @@ void TextTool::clear() {
   m_textElements.clear();
   hideTextInput();
 }
+
+void TextTool::eraseNear(const QPoint &pt, int radius) {
+  // Calculate the squared radius for more efficient distance comparison
+  int radiusSquared = radius * radius;
+  
+  // Use an iterator to safely remove text elements that are near the eraser point
+  auto it = m_textElements.begin();
+  while (it != m_textElements.end()) {
+    const TextElement &element = *it;
+    
+    // Calculate distance between eraser center and text position
+    int dx = element.position.x() - pt.x();
+    int dy = element.position.y() - pt.y();
+    int distanceSquared = dx * dx + dy * dy;
+    
+    // If the distance is less than the eraser radius, remove the text element
+    // Using a slightly larger hit area for text to make it easier to erase
+    if (distanceSquared <= radiusSquared * 1.5) {
+      it = m_textElements.erase(it);
+    } else {
+      ++it;
+    }
+  }
+}

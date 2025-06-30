@@ -13,6 +13,7 @@ public:
   void draw(QPainter &p) override;
   void onRemoteJson(const QJsonObject &msg) override;
   void clear() override;
+  void eraseNear(const QPoint &pt, int radius) override;
 
 private:
   QString m_userId;
